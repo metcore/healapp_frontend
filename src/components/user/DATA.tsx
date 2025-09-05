@@ -1,0 +1,38 @@
+export const DATA_USERS = [
+  { 
+    id: "1",
+    image:"/assets/images/product/example1.png",
+    name: "Slamet Riyadi",
+    role: "Account Manager",
+    email:"metcore2@gmail.com",
+    phone_number:"6289604038338",
+    is_active: true,
+  },
+  { 
+    id: "2",
+    image:"/assets/images/product/example2.jpg",
+    name: "Ayu sam",
+    role: "Dokter",
+    email:"ayusam@gmail.com",
+    phone_number:"6289602038338",
+    is_active: true,
+  },
+  { 
+    id: "3",
+    image:"/assets/images/product/example2.jpg",
+    name: "Ayu sam",
+    role: "Dokter",
+    email:"ayusam@gmail.com",
+    phone_number:"6289602038338",
+    is_active: true,
+  },
+  { 
+    id: "4",
+    image:"/assets/images/product/example2.jpg",
+    name: "Ayu sam",
+    role: "Dokter",
+    email:"ayusam@gmail.com",
+    phone_number:"6289602038338",
+    is_active: true,
+  },
+];
