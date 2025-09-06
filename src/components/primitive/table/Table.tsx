@@ -3,6 +3,8 @@
 import { Icon } from "@iconify/react";
 import * as React from "react";
 import { Table as TableBootstrap } from "react-bootstrap";
+import Pagination from "../pagination/Pagination";
+import api from "@/api/api";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -12,7 +14,6 @@ export type ColumnConfig<T> = {
   header?: () => React.ReactNode;
   value?: (data: T) => React.ReactNode;
   show?: boolean;
-
   // Sorting & Filtering
   sortable?: boolean;
   sortAccessor?: (row: T) => string | number | Date | boolean | null | undefined;
@@ -32,7 +33,7 @@ export type TableProps<T extends object> = {
   bordered?: boolean;
   size?: "sm" | undefined;
   caption?: string;
-
+  url?: string;
   // Search / Filter / Sort
   searchable?: boolean;
   searchPlaceholder?: string;
@@ -49,8 +50,9 @@ export type TableProps<T extends object> = {
   }) => void;
 };
 
+const DEFAULT_PER_PAGE = 10;
+
 export default function Table<T extends object>({
-  data,
   columns,
   renderRow,
   emptyText = "Data belum ada yang dipilih",
@@ -64,11 +66,21 @@ export default function Table<T extends object>({
   searchPlaceholder = "Cari...",
   stickyHeader = true,
   enableColumnFiltersByDefault = true,
-
+  url,
   // NEW callbacks
   onSortChange,
   onFilterChange,
 }: TableProps<T>) {
+  const [dataFetch, setDataFetch] = React.useState<T[]>( []);
+  const [params, setParams] = React.useState({
+    page: 1,
+    per_page: DEFAULT_PER_PAGE,
+    sort: "",
+    order: "",
+    search: "",
+  });
+
+  // Visible columns (yang show !== false)
   const visibleColumns = React.useMemo(
     () =>
       columns?
@@ -120,9 +132,8 @@ export default function Table<T extends object>({
   }, [query, colFilters, onFilterChange]);
 
   const filteredData = React.useMemo(() => {
-    let rows = [...data];
+    let rows = [...dataFetch?.data || []];
 
-    // Global search across visible columns
     if (query.trim()) {
       const q = query.toLowerCase();
       rows = rows.filter((row) =>
@@ -176,7 +187,30 @@ export default function Table<T extends object>({
     }
 
     return rows;
-  }, [data, query, colFilters, sortBy, sortDir, visibleColumns]);
+  }, [ query, colFilters, sortBy, sortDir, visibleColumns]);
+
+  const handleOnChangePagination = (p: number) => {
+    console.log("Ganti halaman ke:", p);
+  }
+
+  React.useEffect(() => {
+    setColFilters({});
+    setQuery("");
+    setSortBy(null);
+    setSortDir(null);
+
+    api.get(url || "/users", {
+      params: {
+        page: 1,
+        per_page: DEFAULT_PER_PAGE,
+      },
+    }).then((res) => {
+      console.log(res)
+      setDataFetch(res.data);
+    }).catch((err) => {
+      console.error("Error fetching data:", err);
+    });
+  }, []);
 
   return (
     <div className={`table-responsive-${responsiveBreakpoint} min-vh-100 `}>
@@ -279,6 +313,12 @@ export default function Table<T extends object>({
             )}
           </tbody>
         </TableBootstrap>
+      <Pagination
+        total={dataFetch?.total}
+        perPage={DEFAULT_PER_PAGE}
+        onPageChange={handleOnChangePagination}
+        page={1}
+      />
 
       <style jsx>{`
         /* Mobile-friendly label when stacking cells */

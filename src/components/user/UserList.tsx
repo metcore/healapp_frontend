@@ -169,7 +169,7 @@ const UserList = () => {
       <Table
         // onFilterChange={(e)=>console.log(e)}
         onSortChange={(e)=>console.log(users)}
-        data={users?.data || []}
+        url="/users"
         columns={[
           {
             attribute:"id",
@@ -284,12 +284,6 @@ const UserList = () => {
             )
           },
         ]}
-      />
-      <Pagination
-        total={users.total}
-        perPage={DEFAULT_PER_PAGE}
-        onPageChange={handleOnChangePagination}
-        page={currentPage}
       />
     </Card>
   );
