@@ -1,6 +1,8 @@
+
 import PluginInit from "@/helper/PluginInit";
 import "./font.css";
 import "./globals.css";
+import Providers from "@/provider/Provider";
 
 export const metadata = {
   title: "WowDash NEXT JS - Admin Dashboard Multipurpose Bootstrap 5 Template",
@@ -12,7 +14,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang='en'>
       <PluginInit />
-      <body suppressHydrationWarning={true}>{children}</body>
+      <body suppressHydrationWarning={true}>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

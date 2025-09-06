@@ -27,7 +27,6 @@ type OrderItem = {
 export default function TransactionPayment() {
   const router = useRouter()
 
-  // ----- State
   const [loadingSubmit, setLoadingSubmit] = useState(false)
   const [loadingSubmitVoucher, setLoadingSubmitVoucher] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('')

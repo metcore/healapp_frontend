@@ -1,7 +1,6 @@
 'use client'
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Link from "next/link";
-import { DATA_USERS } from "./DATA";
 import Pagination from "../primitive/pagination/Pagination";
 import Table from "../primitive/table/Table";
 import Checkbox from "../primitive/checkbox/Checkbox";
@@ -9,19 +8,31 @@ import { DropdownButton, Image } from "react-bootstrap";
 import Switch from "../primitive/switch/Switch";
 import ButtonDelete from "../primitive/button-delete/ButtonDelete";
 import Card from "../primitive/card/Card";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import Input from "../primitive/input/Input";
 import Button from "../primitive/button/Button";
+import { useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { fetchUsers } from "@/redux/slice/user/userSlice";
+import { useSelector } from "react-redux";
+import { useRouter, useSearchParams } from 'next/navigation'
 
+const DEFAULT_PER_PAGE = 1;
 const UserList = () => {
+  const router = useRouter()
+  const [currentPage, setCurrentPage] = useState(1);  
+  const dispatch = useDispatch<AppDispatch>()
+  const { users, page, total, loading } = useSelector(
+    (state: RootState) => state.users
+  );
   const [show, setShow] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showModalSelectedItem, setShowModalSelectedItem] = useState<boolean>(false);
   const [loadingSearch, setLoadingSearch] = useState<boolean>(false)
   const [isOpenModalFilter, setIsOpenModalFilter] = useState<boolean>(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+  const searchParams = useSearchParams(); // ✅ hook di body component
 
   const handleCheckAll = () => {
     let newIds: string[] = [];
@@ -53,6 +64,35 @@ const UserList = () => {
     console.log(term.target.value)
     setLoadingSearch(true)
   }, 300)
+
+  useEffect(() => {
+    dispatch(fetchUsers({
+      page: page,
+      per_page: DEFAULT_PER_PAGE
+    }))
+    setCurrentPage(1)
+  }, [dispatch])
+
+  const handleOnChangePagination = (p: number) => {
+    
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', String(p));
+    params.set('search', 'slamet');
+
+    router.push(`${window.location.pathname}?${params.toString()}`);
+    dispatch(
+      fetchUsers({
+        page: p,
+        per_page: DEFAULT_PER_PAGE
+      }),
+    );
+    setCurrentPage(p)
+  }
+  
+  useEffect(() => {
+   
+    console.log(page)
+  }, [])
   return (
     <Card
       renderHeader={
@@ -127,9 +167,9 @@ const UserList = () => {
       }
     >
       <Table
-        onFilterChange={(e)=>console.log(e)}
-        onSortChange={(e)=>console.log(e)}
-        data={DATA_USERS}
+        // onFilterChange={(e)=>console.log(e)}
+        onSortChange={(e)=>console.log(users)}
+        data={users?.data || []}
         columns={[
           {
             attribute:"id",
@@ -149,7 +189,7 @@ const UserList = () => {
             )
           },
           {
-            attribute:"name",
+            attribute:"Name",
             sortable: true,
             label:"Name",
             value: (data) => (
@@ -161,14 +201,14 @@ const UserList = () => {
                 />
                 <div className='flex-grow-1'>
                   <span className='text-md mb-0 fw-normal text-secondary-light'>
-                    {data.name}
+                    {data.Name}
                   </span>
                 </div>
               </div>
             )
           },
           {
-            attribute:"email",
+            attribute:"Email",
             sortable: true,
             label:"Email",
           },
@@ -177,7 +217,7 @@ const UserList = () => {
             label:"Phone",
           },
           {
-            attribute:"role",
+            attribute:"Role",
             label:"Role",
           },
           {
@@ -246,9 +286,10 @@ const UserList = () => {
         ]}
       />
       <Pagination
-        total={1000}
-        perPage={10}
-        page={9}
+        total={users.total}
+        perPage={DEFAULT_PER_PAGE}
+        onPageChange={handleOnChangePagination}
+        page={currentPage}
       />
     </Card>
   );

@@ -92,7 +92,6 @@ export default function Table<T extends object>({
 
   // === onSort (NEW: panggil onSortChange) ===
   const onSort = (col: ColumnConfig<T>) => {
-    console.log("tes1" ,col)
     if (col.sortable === false) return;
     const colKey = col.attribute;
 
@@ -196,7 +195,6 @@ export default function Table<T extends object>({
               {visibleColumns?.map((col, idx) => {
                 const isSorted = sortBy === col.attribute && !!sortDir;
                 const canSort = !!col.sortable || (col.sortable == undefined);
-                console.log(col)
                 return (
                   <th
                     key={idx}
