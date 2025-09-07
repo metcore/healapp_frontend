@@ -5,6 +5,7 @@ import * as React from "react";
 import { Table as TableBootstrap } from "react-bootstrap";
 import Pagination from "../pagination/Pagination";
 import api from "@/api/api";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -23,7 +24,6 @@ export type ColumnConfig<T> = {
 };
 
 export type TableProps<T extends object> = {
-  data: T[];
   columns: ColumnConfig<T>[];
   renderRow?: (row: T) => React.ReactNode;
   emptyText?: string;
@@ -40,10 +40,10 @@ export type TableProps<T extends object> = {
   stickyHeader?: boolean;
   enableColumnFiltersByDefault?: boolean;
 
-  /** New: callback ketika sort berubah */
+  /** Callback ketika sort berubah */
   onSortChange?: (args: { sortBy: keyof T | null; sortDir: SortDirection }) => void;
 
-  /** New: callback ketika filter berubah (termasuk global search) */
+  /** Callback ketika filter berubah (termasuk global search) */
   onFilterChange?: (args: {
     query: string;
     columnFilters: Record<string, string>;
@@ -51,6 +51,11 @@ export type TableProps<T extends object> = {
 };
 
 const DEFAULT_PER_PAGE = 10;
+
+type PaginatedResponse<T> = {
+  data: T[];
+  total: number;
+};
 
 export default function Table<T extends object>({
   columns,
@@ -67,24 +72,28 @@ export default function Table<T extends object>({
   stickyHeader = true,
   enableColumnFiltersByDefault = true,
   url,
-  // NEW callbacks
   onSortChange,
   onFilterChange,
 }: TableProps<T>) {
-  const [dataFetch, setDataFetch] = React.useState<T[]>( []);
-  const [params, setParams] = React.useState({
-    page: 1,
-    per_page: DEFAULT_PER_PAGE,
-    sort: "",
-    order: "",
-    search: "",
+  const [dataFetch, setDataFetch] = React.useState<PaginatedResponse<T>>({
+    data: [],
+    total: 0,
   });
 
-  // Visible columns (yang show !== false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [params, setParams] = React.useState({
+    page: Number(searchParams.get("page")) || 1,
+    per_page: Number(searchParams.get("per_page")) || DEFAULT_PER_PAGE,
+    sort: searchParams.get("sort") || "",
+    order: searchParams.get("order") || "",
+    search: searchParams.get("search") || "",
+  });
+
   const visibleColumns = React.useMemo(
     () =>
-      columns?
-        .filter((col) => col.show !== false)
+      columns
+        ?.filter((col) => col.show !== false)
         .map((c) => ({
           ...c,
           filter: c.filter ?? (enableColumnFiltersByDefault ? "text" : null),
@@ -102,12 +111,10 @@ export default function Table<T extends object>({
   const [sortBy, setSortBy] = React.useState<keyof T | null>(null);
   const [sortDir, setSortDir] = React.useState<SortDirection>(null);
 
-  // === onSort (NEW: panggil onSortChange) ===
   const onSort = (col: ColumnConfig<T>) => {
     if (col.sortable === false) return;
-    const colKey = col.attribute;
 
-    // hitung next state terlebih dahulu (avoid async setState race)
+    const colKey = col.attribute;
     let nextSortBy: keyof T | null = sortBy;
     let nextSortDir: SortDirection = sortDir;
 
@@ -116,23 +123,26 @@ export default function Table<T extends object>({
       nextSortDir = "asc";
     } else {
       nextSortDir = sortDir === "asc" ? "desc" : sortDir === "desc" ? null : "asc";
-      // jika null, kita tetap pertahankan sortBy agar ikon tahu kolom aktif,
-      // atau bisa juga reset ke null. Di sini biarkan sortBy tetap agar UI jelas.
     }
+
     setSortBy(nextSortBy);
     setSortDir(nextSortDir);
 
-    // callback untuk parent
+    setParams((prev) => ({
+      ...prev,
+      sort: nextSortBy ? String(nextSortBy) : "",
+      order: nextSortDir ?? "",
+    }));
+
     onSortChange?.({ sortBy: nextSortBy, sortDir: nextSortDir });
   };
 
-  // === onFilter (NEW: panggil onFilterChange) ===
   React.useEffect(() => {
     onFilterChange?.({ query, columnFilters: colFilters });
   }, [query, colFilters, onFilterChange]);
 
   const filteredData = React.useMemo(() => {
-    let rows = [...dataFetch?.data || []];
+    let rows = [...(dataFetch.data || [])];
 
     if (query.trim()) {
       const q = query.toLowerCase();
@@ -145,7 +155,7 @@ export default function Table<T extends object>({
       );
     }
 
-    if(visibleColumns){
+    if (visibleColumns) {
       for (const c of visibleColumns) {
         const val = colFilters[String(c.attribute)];
         if (val && c.filter) {
@@ -157,177 +167,185 @@ export default function Table<T extends object>({
         }
       }
     }
-
-    // Sorting
-    if (sortBy && sortDir) {
-      const col = visibleColumns.find((c) => c.attribute === sortBy);
-      if (col) {
-        const accessor = (r: T) =>
-          col.sortAccessor ? col.sortAccessor(r) : ((r as any)[col.attribute] as any);
-
-        rows.sort((a, b) => {
-          const av = accessor(a);
-          const bv = accessor(b);
-
-          const parseVal = (v: any) => {
-            if (v instanceof Date) return v.getTime();
-            if (typeof v === "string") return v.toString().toLowerCase();
-            if (typeof v === "boolean") return v ? 1 : 0;
-            if (v == null) return -Infinity; // nulls last
-            return v as any;
-          };
-
-          const A = parseVal(av);
-          const B = parseVal(bv);
-          if (A < B) return sortDir === "asc" ? -1 : 1;
-          if (A > B) return sortDir === "asc" ? 1 : -1;
-          return 0;
-        });
-      }
-    }
-
     return rows;
-  }, [ query, colFilters, sortBy, sortDir, visibleColumns]);
+  }, [dataFetch.data, query, colFilters, visibleColumns]);
 
   const handleOnChangePagination = (p: number) => {
-    console.log("Ganti halaman ke:", p);
-  }
+    setParams((prev) => ({
+      ...prev,
+      page: p,
+    }));
+  };
 
+  // Initial fetch
   React.useEffect(() => {
-    setColFilters({});
-    setQuery("");
-    setSortBy(null);
-    setSortDir(null);
+    if (url) {
+      api
+        .get<PaginatedResponse<T>>(url, {
+          params: {
+            page: 1,
+            per_page: DEFAULT_PER_PAGE,
+          },
+        })
+        .then((res) => {
+          setDataFetch(res.data);
+        })
+        .catch((err) => {
+          console.error("Error fetching data:", err);
+        });
+    }
+  }, [url]);
 
-    api.get(url || "/users", {
-      params: {
-        page: 1,
-        per_page: DEFAULT_PER_PAGE,
-      },
-    }).then((res) => {
-      console.log(res)
-      setDataFetch(res.data);
-    }).catch((err) => {
-      console.error("Error fetching data:", err);
-    });
-  }, []);
+  // Refetch when params change
+  React.useEffect(() => {
+    if (url) {
+      api
+        .get<PaginatedResponse<T>>(url, {
+          params: params,
+        })
+        .then((res) => {
+          setDataFetch(res.data);
+        })
+        .catch((err) => {
+          console.error("Error fetching data:", err);
+        });
+    }
+  }, [url, params]);
+  React.useEffect(() => {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", String(params.page));
+    if (params.per_page) query.set("per_page", String(params.per_page));
+    if (params.sort) query.set("sort", params.sort);
+    if (params.order) query.set("order", params.order);
+    if (params.search) query.set("search", params.search);
 
+    router.replace(`?${query.toString()}`);
+  }, [params, router]);
+
+  
   return (
-    <div className={`table-responsive-${responsiveBreakpoint} min-vh-100 `}>
-      {/* Global toolbar */}
-        <TableBootstrap
-          className="bordered-table mb-0 "
-          responsive
-          striped={striped}
-          hover={hover}
-          bordered={bordered}
-          size={size}
-        >
-          {caption && <caption className="px-2">{caption}</caption>}
-          <thead className={`${stickyHeader ? "sticky-top" : ""} bg-body-tertiary`}>
-            <tr>
-              {visibleColumns?.map((col, idx) => {
-                const isSorted = sortBy === col.attribute && !!sortDir;
-                const canSort = !!col.sortable || (col.sortable == undefined);
-                return (
-                  <th
-                    key={idx}
-                    scope="col"
-                    className={`text-nowrap ${canSort ? "user-select-none" : ""}`}
+    <div className={`table-responsive-${responsiveBreakpoint} min-vh-100`}>
+      <TableBootstrap
+        className="bordered-table mb-0"
+        responsive
+        striped={striped}
+        hover={hover}
+        bordered={bordered}
+        size={size}
+      >
+        {caption && <caption className="px-2">{caption}</caption>}
+        <thead className={`${stickyHeader ? "sticky-top" : ""} bg-body-tertiary`}>
+          <tr>
+            {visibleColumns?.map((col, idx) => {
+              const isSorted = sortBy === col.attribute && !!sortDir;
+              const canSort = !!col.sortable || col.sortable === undefined;
+              return (
+                <th
+                  key={idx}
+                  scope="col"
+                  className={`text-nowrap ${canSort ? "user-select-none" : ""}`}
+                >
+                  <div
+                    className={`d-flex align-items-center justify-content-between gap-2 ${
+                      canSort ? "cursor-pointer text-primary" : ""
+                    }`}
+                    role={canSort ? "button" : undefined}
+                    onClick={() => onSort(col)}
                   >
-                    <div
-                      className={`d-flex align-items-center justify-content-between gap-2 ${canSort ? "cursor-pointer  text-primary " : ""}`}
-                      role={canSort ? "button" : undefined}
-                      onClick={() => onSort(col)}
-                    >
-                      <span>{col.header ? col.header() : col.label}</span>
-                      {canSort && (
-                        <Icon
-                          icon={`${
-                            !isSorted
-                              ? "mdi:sort-ascending"
-                              : sortDir === "asc"
-                              ? "mdi:sort-ascending"
-                              : "mdi:sort-descending"
-                          }`}
+                    <span>{col.header ? col.header() : col.label}</span>
+                    {canSort && (
+                      <Icon
+                        icon={
+                          !isSorted
+                            ? "mdi:sort-ascending"
+                            : sortDir === "asc"
+                            ? "mdi:sort-ascending"
+                            : "mdi:sort-descending"
+                        }
+                      />
+                    )}
+                  </div>
+                  {/* Column filter UI */}
+                  {col.filter && (
+                    <div className="mt-2">
+                      {col.filter === "text" && (
+                        <input
+                          className="form-control form-control-sm"
+                          placeholder={col.filterPlaceholder ?? "Filter kolom"}
+                          value={colFilters[String(col.attribute)] ?? ""}
+                          onChange={(e) =>
+                            setColFilters((s) => ({
+                              ...s,
+                              [String(col.attribute)]: e.target.value,
+                            }))
+                          }
                         />
                       )}
+                      {col.filter === "select" && (
+                        <select
+                          className="form-select form-select-sm"
+                          value={colFilters[String(col.attribute)] ?? ""}
+                          onChange={(e) =>
+                            setColFilters((s) => ({
+                              ...s,
+                              [String(col.attribute)]: e.target.value,
+                            }))
+                          }
+                        >
+                          <option value="">Semua</option>
+                          {(col.filterOptions ?? []).map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
-                    {/* Column filter UI */}
-                    {col.filter && (
-                      <div className="mt-2">
-                        {col.filter === "text" && (
-                          <input
-                            className="form-control form-control-sm"
-                            placeholder={col.filterPlaceholder ?? "Filter kolom"}
-                            value={colFilters[String(col.attribute)] ?? ""}
-                            onChange={(e) =>
-                              setColFilters((s) => ({ ...s, [String(col.attribute)]: e.target.value }))
-                            }
-                          />
-                        )}
-                        {col.filter === "select" && (
-                          <select
-                            className="form-select form-select-sm"
-                            value={colFilters[String(col.attribute)] ?? ""}
-                            onChange={(e) =>
-                              setColFilters((s) => ({ ...s, [String(col.attribute)]: e.target.value }))
-                            }
-                          >
-                            <option value="">Semua</option>
-                            {(col.filterOptions ?? []).map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                    )}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.map((row, idx) =>
-                renderRow ? (
-                  <React.Fragment key={idx}>{renderRow(row)}</React.Fragment>
-                ) : (
-                  <tr key={idx}>
-                    {visibleColumns?.map((col, i) => (
-                      <td key={i} data-label={col.label}>
-                        {col.value ? col.value(row) : String((row as any)[col.attribute] ?? "")}
-                      </td>
-                    ))}
-                  </tr>
-                )
+                  )}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {filteredData.length > 0 ? (
+            filteredData.map((row, idx) =>
+              renderRow ? (
+                <React.Fragment key={idx}>{renderRow(row)}</React.Fragment>
+              ) : (
+                <tr key={idx}>
+                  {visibleColumns?.map((col, i) => (
+                    <td key={i} data-label={col.label}>
+                      {col.value ? col.value(row) : String((row as any)[col.attribute] ?? "")}
+                    </td>
+                  ))}
+                </tr>
               )
-            ) : (
-              <tr>
-                <td colSpan={visibleColumns.length} className="p-4 text-center text-secondary">
-                  {emptyText}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </TableBootstrap>
+            )
+          ) : (
+            <tr>
+              <td colSpan={visibleColumns.length} className="p-4 text-center text-secondary">
+                {emptyText}
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </TableBootstrap>
+
       <Pagination
-        total={dataFetch?.total}
+        total={dataFetch.total}
         perPage={DEFAULT_PER_PAGE}
         onPageChange={handleOnChangePagination}
-        page={1}
+        page={params.page}
       />
 
       <style jsx>{`
-        /* Mobile-friendly label when stacking cells */
         @media (max-width: 576px) {
           td[data-label]::before {
             content: attr(data-label) ": ";
             font-weight: 600;
             display: inline-block;
-            margin-right: .5rem;
+            margin-right: 0.5rem;
             color: var(--bs-secondary-color);
           }
         }

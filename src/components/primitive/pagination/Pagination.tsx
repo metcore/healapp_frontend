@@ -20,12 +20,10 @@ export default function Pagination({
   const start = (page - 1) * perPage + 1;
   const end = Math.min(page * perPage, total);
 
-  // hitung pages maksimum 5 nomor
   const getVisiblePages = () => {
     let startPage = Math.max(1, page - 2);
     let endPage = Math.min(totalPages, page + 2);
 
-    // jaga-jaga kalau jumlahnya kurang dari 5
     if (endPage - startPage < 4) {
       if (startPage === 1) {
         endPage = Math.min(5, totalPages);

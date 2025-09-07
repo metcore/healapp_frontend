@@ -61,7 +61,6 @@ const UserList = () => {
   }
 
   const handleSearch = useDebouncedCallback((term)=>{
-    console.log(term.target.value)
     setLoadingSearch(true)
   }, 300)
 
@@ -91,7 +90,6 @@ const UserList = () => {
   
   useEffect(() => {
    
-    console.log(page)
   }, [])
   return (
     <Card
@@ -168,7 +166,7 @@ const UserList = () => {
     >
       <Table
         // onFilterChange={(e)=>console.log(e)}
-        onSortChange={(e)=>console.log(users)}
+        // onSortChange={(e)=>console.log(users)}
         url="/users"
         columns={[
           {
