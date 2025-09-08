@@ -217,12 +217,18 @@ const UserList = () => {
           {
             attribute:"Role",
             label:"Role",
+            filter:"select",
+            filterOptions: [
+              { label: "SUPERADMIN", value: "SUPERADMIN" },
+              { label: "Dokter", value: "DOCTOR" },
+              { label: "Therapist", value: "THERAPIST" },
+            ],
           },
           {
-            attribute:"is_active",
+            attribute:"IsActive",
             label:"Active",
             value: (data)=> (
-              <Switch name="is_active[]" checked={data.is_active} />
+              <Switch name="IsActive[]" checked={data.IsActive} />
             )
           },
           

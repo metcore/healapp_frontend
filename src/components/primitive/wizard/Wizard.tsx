@@ -1,11 +1,14 @@
 'use client'
-import React, { createContext, useContext, useState, ReactNode, ReactElement, useRef } from "react";
-import { InputRef } from "@/components/primitive/input/Input";
+import React, { createContext, useContext, useState, ReactNode, ReactElement, useRef, useEffect } from "react";
+import Button from "../button/Button";
+import Form from "../form/Form";
 
 interface WizardContextType {
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
+  loading: (boolean | undefined);
+  children: ReactElement<WizardItemProps>[] | ReactElement<WizardItemProps>;
 }
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined);
@@ -21,14 +24,16 @@ function useWizard() {
 interface WizardProps {
   children: ReactElement<WizardItemProps>[] | ReactElement<WizardItemProps>;
   onNext?: () => boolean | Promise<boolean>;
+  loading?: boolean;
+  onSubmit: () => void;
 }
 
-export default function Wizard({ children }: WizardProps) {
+export default function Wizard({ children, loading, onSubmit }: WizardProps) {
   const steps = React.Children.toArray(children) as ReactElement<WizardItemProps>[];
   const onNextFns = steps.map((step) => step.props.onNext);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const nextStep = async () => {
+  const nextStep = async (e) => {
     const onNext = onNextFns[currentStep];
     let canProceed = true;
     if (onNext) {
@@ -41,16 +46,18 @@ export default function Wizard({ children }: WizardProps) {
     }
   };
 
-
   const prevStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
+  const handleOnSubmitForm = (e) => {
+    onSubmit?.(e)
+    return false;  
+  }
   return (
-    <WizardContext.Provider value={{ currentStep, nextStep, prevStep }}>
-
+    <WizardContext.Provider value={{ currentStep, nextStep, prevStep, loading,  children }}>
       <div className='form-wizard'>
-        <form action='#' method='post'>
+        <Form onSubmit={handleOnSubmitForm}>
           <div className='form-wizard-header overflow-x-auto scroll-sm pb-8 my-32'>
             <ul className='list-unstyled form-wizard-list'>
               {steps.map((step, index) => (
@@ -76,35 +83,48 @@ export default function Wizard({ children }: WizardProps) {
               {step.props.children}
             </fieldset>
           ))}
-        </form>
+        </Form>
       </div>
     </WizardContext.Provider>
   );
 }
 export function WizardNavigation() {
-  const { currentStep, nextStep, prevStep } = useWizard();
+  const { currentStep, nextStep, prevStep, loading, children } = useWizard();
+
 
   return (
     <div className="d-flex justify-content-between mt-4">
       <div style={{ flex: 1 }}>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={prevStep}
-          style={{ display: currentStep === 0 ? "none" : "inline-block" }}
-        >
-          Sebelumnya
-        </button>
+        {currentStep !== 0 ?(
+
+          <Button
+            onClick={prevStep}
+            size="sm"
+          >
+            Sebelumnya
+          </Button>
+        ): ""}
       </div>
 
       <div>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={nextStep}
-        >
-          Selanjutnya
-        </button>
+        {currentStep == children.length -1  ? (
+          <Form.ButtonSubmit
+            size="sm"
+            disabled={loading}
+            loading={loading}
+          >
+            Simpan
+          </Form.ButtonSubmit>
+        ):(
+          <Button
+            onClick={nextStep}
+            size="sm"
+            disabled={loading}
+            loading={loading}
+          >
+            Selanjutnya
+          </Button>
+        )}
       </div>
     </div>
   );

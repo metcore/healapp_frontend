@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import { useRouter } from "next/navigation";
 import Checkbox, { CheckboxRef } from "@/components/primitive/checkbox/Checkbox";
 import { WizardNavigation } from "@/components/primitive/wizard/Wizard";
+import Form from "@/components/primitive/form/Form";
 
 type StepPasswordProps = {
   refCheckboxAggrement: React.RefObject<CheckboxRef>;
@@ -34,7 +35,7 @@ export default function StepAggrement({refCheckboxAggrement}: StepPasswordProps)
       <div className="d-flex flex-column gap-8 p-64">
         <h6 className="text-semibold">Ketentuan Pengguna</h6>
         <p className="mb-0 text-secondary-light">Terakhir nih kamu perlu mempersetujui ketentuan penggunaan Heal App, kamu bisa baca terlebih dahulu dengan click tautan di bawah ini</p>
-        <Checkbox
+        <Form.Checkbox
           name="ketentuan"
           onChange={handleChange}
           value="boot"

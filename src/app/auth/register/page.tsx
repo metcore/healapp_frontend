@@ -1,6 +1,7 @@
 
 import RegisterLayer from "@/components/auth/register/RegisterLayer";
 import Header from "@/masterLayout/Header";
+import { ToastContainer } from "react-toastify";
 export const metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} - Pendaftaran akun`,
   description:
@@ -8,9 +9,21 @@ export const metadata = {
 };
 export default function Page() {
   return (
-    <>
-      <Header />
-      <RegisterLayer />
-    </>
+    <section >
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+        <Header />
+        <RegisterLayer />
+      </section>
   );
 }

@@ -14,9 +14,12 @@ import Modal from 'react-bootstrap/Modal';
 import Button from "react-bootstrap/Button";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "@/api/api";
+import { toast } from "react-toastify";
 export default function RegisterLayer() {
 
   const emailStepRef = useRef<StepEmailRef>(null);
+  const [loadingNextStep, setLoadingNextStep] = useState<boolean>(false); 
   const inputFirstNameRef = useRef<InputRef>(null);
   const inputLastNameRef = useRef<InputRef>(null);
   const inputPasswordRef = useRef<inputPasswordRef>(null);
@@ -47,6 +50,56 @@ export default function RegisterLayer() {
   const handleClickModal = () => [
       router.push('/sign-in', { scroll: false })
   ]
+  
+  const handleOnNextStepEmail = async () => {
+    const isValid = emailStepRef.current?.validate() ?? false;
+    if (!isValid) return false;
+
+    try {
+      const response = await api.post('/register/validation', {
+        email: emailStepRef.current?.getValue() ?? ''
+      });
+
+      setLoadingNextStep(false);
+      return true;
+    } catch (error: any) {
+      setLoadingNextStep(false);
+      if (error.response && error.response.status === 409) {
+        emailStepRef.current?.setError([{ error: "Email sudah terdaftar, harap gunakan email" }]);
+      } else {
+        emailStepRef.current?.setError([{ error: "Terjadi kesalahan server" }]);
+      }
+      return false;
+    }
+  };
+
+  const handleOnSubmitWizard = async (e) => { 
+    console.log("ee",e);
+    try {
+      const response = await api.post('/register', {
+        email: emailStepRef.current?.getValue() ?? '',
+        first_name: inputFirstNameRef.current?.getValue() ?? '',
+        last_name: inputLastNameRef.current?.getValue() ?? '',
+        password: inputPasswordRef.current?.getValue() ?? '',
+        password_confirmation: inputConfirmPasswordRef.current?.getValue() ?? '',
+        otp: inputOtpRef.current?.getValue() ?? '',
+        agree_terms: checkboxAggrementRef.current?.getValue() ?? false,
+      });
+
+      setModalSuccess(true);
+      return true;
+    } catch (error: any) {
+      console.log("error", error.response.status);
+      if (error.response && error.response.status === 400) {
+        toast.error("Data tidak valid, silahkan periksa kembali inputan anda");
+      } else {
+        // Handle other types of errors (e.g., network errors)
+        console.error("Terjadi kesalahan saat mengirim data:", error);
+      }
+      return false;
+    }
+  }
+
   return (
 
       <div
@@ -63,12 +116,13 @@ export default function RegisterLayer() {
               width={100}
               height={20}
             />
-              <Wizard>
+              <Wizard
+                loading={loadingNextStep}
+                onSubmit={handleOnSubmitWizard}
+              >
                 <Wizard.Item
                   header="Email"
-                  onNext={ () => {
-                    return emailStepRef.current?.validate() ?? false;
-                  }}
+                  onNext={handleOnNextStepEmail}
                 >
                   <StepEmail ref={emailStepRef} />
                 </Wizard.Item>

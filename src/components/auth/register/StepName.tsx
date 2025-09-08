@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { validate } from "@/helper/Validation/Validate";
 import {  WizardNavigation } from "@/components/primitive/wizard/Wizard";
 import Button from "react-bootstrap/esm/Button";
+import Form from "@/components/primitive/form/Form";
 
 const rules = {
   required: { message: "Wajib diisi" },
@@ -33,12 +34,6 @@ export default function StepName({ refInputFirstName, refInputLastnName }: StepN
     setError(e)
   }
 
-  const handleClick = () => {
-    const isValidFirstName = refInputFirstName.current?.validate() ?? false;
-    const firstNameValue = refInputFirstName.current?.getValue() ?? "";
-    console.log(isValidFirstName, "isValidFirstName");
-    console.log(refInputFirstName.current?.getValue(), "refInputFirstNam2e");
-  }
 
   return (
 
@@ -46,7 +41,7 @@ export default function StepName({ refInputFirstName, refInputLastnName }: StepN
       <div className="d-flex flex-column gap-16 p-64">
         <h6 className="text-semibold mb-0">Siapa Nama Anda</h6>
         <p className="mb-0">Masukan Nama Lengkap Anda</p>
-        <Input
+        <Form.Input
           name="first_name"
           placeholder="Masukan nama depan"
           onChange={handleChange}
@@ -60,7 +55,7 @@ export default function StepName({ refInputFirstName, refInputLastnName }: StepN
           onValidate={handleOnError}
           ref={refInputFirstName}
         />
-        <Input
+        <Form.Input
           label="Nama belakang"
           name="last_name"
           placeholder="Masukan nama belakang"

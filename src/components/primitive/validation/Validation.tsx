@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import { Fragment } from "react";
 
 export default function Validaiton ({error}) {
+
   return (
     <Fragment>
       {error && error.length > 0 && (

@@ -20,6 +20,9 @@ import InputNumber, { InputNumberRef } from '../input-number/InputNumber';
 import CounterButton, { CounterButtonRef } from '../counter-button/CounterButton';
 import TextArea, { TextAreaRef } from '../textarea/TextArea';
 import Switch, { SwitchRef } from '../switch/Switch';
+import InputPassword, { inputPasswordRef } from '../input-password/InputPassword';
+import Checkbox, { CheckboxRef } from '../checkbox/Checkbox';
+import InputOtp, { InputOtpRef } from '../input-otp/InputOtp';
 
 /** Bentuk minimum semua field ref */
 type BaseFieldRef = {
@@ -149,7 +152,6 @@ const Form = forwardRef<FormRef, FormProps>(function Form(
         onChange={
           () => {
             const  values  = getValues();
-            console.log('d',values)
             const fieldsArray = Array.from(fields.current.values());
             onChange?.({
               fields: fieldsArray,
@@ -212,6 +214,49 @@ Form.Input = forwardRef<InputRef, any>((props, forwardedRef) => {
   }));
 
   return <Input ref={innerRef} {...props} />;
+});
+
+Form.InputPassword = forwardRef<inputPasswordRef, any>((props, forwardedRef) => {
+  const innerRef = useFieldRegistration<inputPasswordRef | null>(props.name);
+
+  useImperativeHandle(forwardedRef, () => ({
+    validate: () => innerRef.current?.validate?.() ?? true,
+    getValue: () => innerRef.current?.getValue?.(),
+    focus: () => innerRef.current?.focus?.(),
+    current: innerRef.current?.current ?? null,
+    setValue: (v: any) => innerRef.current?.setValue?.(v),
+  }));
+
+  return <InputPassword ref={innerRef} {...props} />;
+});
+Form.Checkbox = forwardRef<CheckboxRef, any>((props, forwardedRef) => {
+  const innerRef = useFieldRegistration<CheckboxRef | null>(props.name);
+
+  // forward proxy ke parent luar (optional)
+  useImperativeHandle(forwardedRef, () => ({
+    validate: () => innerRef.current?.validate?.() ?? true,
+    getValue: () => innerRef.current?.getValue?.(),
+    focus: () => innerRef.current?.focus?.(),
+    current: innerRef.current?.current ?? null,
+    setValue: (v: any) => innerRef.current?.setValue?.(v),
+  }));
+
+  return <Checkbox ref={innerRef} {...props} />;
+});
+
+Form.InputOtp = forwardRef<InputOtpRef, any>((props, forwardedRef) => {
+  const innerRef = useFieldRegistration<InputOtpRef | null>(props.name);
+
+  // forward proxy ke parent luar (optional)
+  useImperativeHandle(forwardedRef, () => ({
+    validate: () => innerRef.current?.validate?.() ?? true,
+    getValue: () => innerRef.current?.getValue?.(),
+    focus: () => innerRef.current?.focus?.(),
+    current: innerRef.current?.current ?? null,
+    setValue: (v: any) => innerRef.current?.setValue?.(v),
+  }));
+
+  return <InputOtp ref={innerRef} {...props} />;
 });
 
 Form.RadioButton = forwardRef<RadioButtonRef, any>((props, forwardedRef) => {

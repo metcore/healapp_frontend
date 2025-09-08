@@ -5,6 +5,7 @@ import Card from "@/components/primitive/card/Card";
 import InputPassword from "@/components/primitive/input-password/InputPassword";
 import { useRouter } from "next/navigation";
 import { WizardNavigation, useWizard } from "@/components/primitive/wizard/Wizard";
+import Form from "@/components/primitive/form/Form";
 
 type StepPasswordProps = {
   refInputPassword: React.RefObject<InputRef>;
@@ -53,7 +54,7 @@ export default function StepPassword({refInputPassword, refInputConfirmPassword 
         <h6 className="text-semibold mb-0">Buat Kata Sandi</h6>
         <p className="mb-0">Kata sandi Anda harus minimal 8 karakter. Kami menyarankan penggunaan huruf, angka, dan simbol.</p>
 
-        <InputPassword
+        <Form.InputPassword
           name="password"
           icon="solar:lock-password-outline"
           placeholder="Masukan password"
@@ -66,7 +67,7 @@ export default function StepPassword({refInputPassword, refInputConfirmPassword 
           onValidate={handlePasswordError}
         />
 
-        <InputPassword
+        <Form.InputPassword
           name="confirmPassword"
           icon="solar:lock-password-outline"
           placeholder="Masukan konfirmasi password"

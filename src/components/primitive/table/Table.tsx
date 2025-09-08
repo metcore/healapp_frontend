@@ -6,6 +6,7 @@ import { Table as TableBootstrap } from "react-bootstrap";
 import Pagination from "../pagination/Pagination";
 import api from "@/api/api";
 import { useRouter, useSearchParams } from "next/navigation";
+import Input from "../input/Input";
 
 export type SortDirection = "asc" | "desc" | null;
 
@@ -88,6 +89,8 @@ export default function Table<T extends object>({
     sort: searchParams.get("sort") || "",
     order: searchParams.get("order") || "",
     search: searchParams.get("search") || "",
+    searchFields: {}, 
+
   });
 
   const visibleColumns = React.useMemo(
@@ -107,7 +110,6 @@ export default function Table<T extends object>({
   // Per-column filters
   const [colFilters, setColFilters] = React.useState<Record<string, string>>({});
 
-  // Sorting
   const [sortBy, setSortBy] = React.useState<keyof T | null>(null);
   const [sortDir, setSortDir] = React.useState<SortDirection>(null);
 
@@ -144,16 +146,16 @@ export default function Table<T extends object>({
   const filteredData = React.useMemo(() => {
     let rows = [...(dataFetch.data || [])];
 
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      rows = rows.filter((row) =>
-        visibleColumns.some((c) => {
-          const cell = c.value ? c.value(row) : (row as any)[c.attribute];
-          const text = typeof cell === "string" ? cell : String(cell ?? "");
-          return text.toLowerCase().includes(q);
-        })
-      );
-    }
+    // if (query.trim()) {
+    //   const q = query.toLowerCase();
+    //   rows = rows.filter((row) =>
+    //     visibleColumns.some((c) => {
+    //       const cell = c.value ? c.value(row) : (row as any)[c.attribute];
+    //       const text = typeof cell === "string" ? cell : String(cell ?? "");
+    //       return text.toLowerCase().includes(q);
+    //     })
+    //   );
+    // }
 
     if (visibleColumns) {
       for (const c of visibleColumns) {
@@ -177,7 +179,7 @@ export default function Table<T extends object>({
     }));
   };
 
-  // Initial fetch
+  
   React.useEffect(() => {
     if (url) {
       api
@@ -196,31 +198,64 @@ export default function Table<T extends object>({
     }
   }, [url]);
 
-  // Refetch when params change
+  React.useEffect(() => {
+    setParams((prev: any) => ({
+      ...prev,
+      searchFields: colFilters, // map langsung colFilters
+      search: query, // global search
+    }));
+  }, [colFilters, query]);
   React.useEffect(() => {
     if (url) {
-      api
-        .get<PaginatedResponse<T>>(url, {
-          params: params,
-        })
-        .then((res) => {
-          setDataFetch(res.data);
-        })
-        .catch((err) => {
-          console.error("Error fetching data:", err);
+      const reqParams: any = {
+        page: params.page,
+        per_page: params.per_page,
+        sort: params.sort,
+        order: params.order,
+      };
+
+      // global search
+      if (params.search) reqParams.search = params.search;
+
+      // search array
+      if (params.searchFields) {
+        Object.entries(params.searchFields).forEach(([key, value]) => {
+          if (value) {
+            reqParams[`search[${key}]`] = value;
+          }
         });
+      }
+
+      api
+        .get<PaginatedResponse<T>>(url, { params: reqParams })
+        .then((res) => setDataFetch(res.data))
+        .catch((err) => console.error("Error fetching data:", err));
     }
   }, [url, params]);
+
+
   React.useEffect(() => {
     const query = new URLSearchParams();
     if (params.page) query.set("page", String(params.page));
     if (params.per_page) query.set("per_page", String(params.per_page));
     if (params.sort) query.set("sort", params.sort);
     if (params.order) query.set("order", params.order);
+
+    // global search
     if (params.search) query.set("search", params.search);
+
+    // search array (colFilters)
+    if (params.searchFields) {
+      Object.entries(params.searchFields).forEach(([key, value]) => {
+        if (value) {
+          query.set(`search[${key}]`, value);
+        }
+      });
+    }
 
     router.replace(`?${query.toString()}`);
   }, [params, router]);
+
 
   
   return (
@@ -269,8 +304,7 @@ export default function Table<T extends object>({
                   {col.filter && (
                     <div className="mt-2">
                       {col.filter === "text" && (
-                        <input
-                          className="form-control form-control-sm"
+                        <Input 
                           placeholder={col.filterPlaceholder ?? "Filter kolom"}
                           value={colFilters[String(col.attribute)] ?? ""}
                           onChange={(e) =>

@@ -24,7 +24,7 @@ export type InputRef = {
   focus: () => void;
   blur:() => void;
   target: HTMLInputElement | null;
-
+  setError: (err: string[]) => void;
 };
 
 export type InputSizeType = "sm" | "lg" | undefined;
@@ -55,6 +55,7 @@ type InputProps = {
   inputMode?: "text" | "search" | "email" | "tel" | "url" | "none" | "numeric" | "decimal";
   type?: string;
   pattern?: string;
+  errors?: ValidateOutput;
 };
 
 const Input = forwardRef<InputRef, InputProps>(function Input(
@@ -82,6 +83,7 @@ const Input = forwardRef<InputRef, InputProps>(function Input(
     inputMode,
     type="text",
     pattern,
+    errors,
   },
   ref
 ) {
@@ -107,6 +109,7 @@ const Input = forwardRef<InputRef, InputProps>(function Input(
       },
       getValue: () => inputValue,
       focus: () => inputRef.current?.focus(),
+      setError: (err) => setError(err),
       target: inputRef.current,
       blur: () => inputRef.current.blur()
 

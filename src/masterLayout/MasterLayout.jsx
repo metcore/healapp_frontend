@@ -10,7 +10,7 @@ const MasterLayout = ({ children }) => {
   let pathname = usePathname();
   let [sidebarActive, seSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
-  const location = usePathname(); // Hook to get the current route
+  const location = usePathname();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
