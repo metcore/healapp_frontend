@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import OnboardingPackage from "./OnboardingPackage";
 import Card from "../primitive/card/Card";
 import OnboardingCompany from "./OnboardingCompany";
@@ -7,156 +7,267 @@ import OnboardingTax from "./OnboardingTax";
 import OnboardingBilling from "./OnboardingBilling";
 import OnboardingCompleted from "./OnboardingCompleted";
 import Wizard, { WizardNavigation } from "../primitive/wizard/Wizard";
+import { InputRef } from "../primitive/input/Input";
+import { TextAreaRef } from "../primitive/textarea/TextArea";
+import { toast } from "react-toastify";
+import { Modal } from "react-bootstrap";
+import Button from "../primitive/button/Button";
+import api from "@/api/api";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingLayer() {
-  const [currentStep, setCurrentStep] = useState(3);
+  const router = useRouter();
+  const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false);
+  const [isOpenModalSubmit, setIsOpenModalSubmit] = useState<boolean>(false)
 
-  const nextStep = () => {
-    console.log(e)
-    return false;
-  };
+  const inputCompanyBrandNameRef = useRef<InputRef>(null)
+  const inputCompanyLegalNameRef = useRef<InputRef>(null)
+  const inputCompanyPhoneRef = useRef<InputRef>(null)
+  const inputCompanyAddressRef = useRef<TextAreaRef>(null)
+  const inputCompanyEmailRef = useRef<InputRef>(null)
+  const [inputCompanyPackage, setInputCompanyPackage] = useState<string>(null)
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+  const inputTaxNpwpRef = useRef<InputRef>(null)
+  const inputTaxPpnRef = useRef<InputRef>(null)
+  const inputTaxRemarkRef = useRef<InputRef>(null)
+
+  const inputBillingNameRef = useRef<InputRef>(null)
+  const inputBillingPhoneRef = useRef<InputRef>(null)
+  const inputBillingEmailRef = useRef<InputRef>(null)
+  const inputBillingAddressRef = useRef<TextAreaRef>(null)
+  const handleOnNextStepCompany = async () => {
+    setLoadingSubmit(true)
+    const isValidCompanyName = inputCompanyBrandNameRef.current.validate()
+    const isValidCompanyEmail = inputCompanyEmailRef.current.validate()
+    const isValidCompanyPhone = inputCompanyPhoneRef.current.validate()
+    const isValidCompanyAddress = inputCompanyAddressRef.current.validate()
+    const isValidCompanyLegalName = inputCompanyLegalNameRef.current.validate()
+    
+    if(isValidCompanyName && isValidCompanyPhone && isValidCompanyAddress && isValidCompanyLegalName && isValidCompanyEmail){
+
+      console.log(inputCompanyAddressRef.current.getValue())
+      try {
+        const response = await api.post('onboarding/company',{
+          company_brand_name:inputCompanyBrandNameRef?.current?.getValue(),
+          company_legal_name:inputCompanyLegalNameRef?.current?.getValue(),
+          company_email:inputCompanyEmailRef?.current?.getValue(),
+          company_phone:inputCompanyPhoneRef?.current?.getValue(),
+          company_address:inputCompanyAddressRef?.current?.getValue(),
+
+        })
+        if (response.status === 201) {
+          setLoadingSubmit(false)
+          return true
+        } else {
+          setLoadingSubmit(false)
+        } 
+      } catch (error) {
+        setLoadingSubmit(false)
+        toast.error("Terjadi kesalahan, silahkan coba lagi");
+      }
+      return false
     }
-  };
+    setLoadingSubmit(false)
+  }
+
+  const hanldeOnNextStepTax = async () => {
+    
+    setLoadingSubmit(true)
+    try {
+      
+      const response = await api.post('onboarding/tax',{
+        npwp:inputTaxNpwpRef?.current?.getValue(),
+        amount: Number(inputTaxPpnRef?.current?.getValue()),
+        remark_tax:inputTaxRemarkRef?.current?.getValue(),
+      })
+      if(response.status === 201){
+        setLoadingSubmit(false)
+        return true
+      }
+    } catch {
+      setLoadingSubmit(false)
+      toast.error("Terjadi kesalahan, silahkan coba lagi");
+    }
+    setLoadingSubmit(false)
+  }
+
+  
+  const handleOnNextStepPackage = async () => {
+    
+    if(!inputCompanyPackage){
+      toast.warning("harap pilih paket yang tersedia terlebih dahulu")
+      return false
+    }
+    setLoadingSubmit(true)
+    try {
+      const response = await api.post("onboarding/plan",{
+        plan_id: inputCompanyPackage
+      })
+      console.log("Res", response)
+      if(response.status === 201){
+        setLoadingSubmit(false)
+        return true;
+      }
+    } catch (error) {
+      
+      toast.error("Terjadi kesalahan, silahkan coba lagi");
+      setLoadingSubmit(false)
+    }
+    
+    setLoadingSubmit(false)
+  }
+
+  const handleNextStepBilling = async () => {
+    console.log("daksdas")
+    setLoadingSubmit(true)
+    const isValidBillingName = inputBillingNameRef.current.validate()
+    const isValidBillingPhone = inputBillingPhoneRef.current.validate()
+    const isValidBillingAddress = inputBillingAddressRef.current.validate()
+    const isValidBillingEmail = inputBillingEmailRef.current.validate()
+    if(!isValidBillingAddress || !isValidBillingEmail || !isValidBillingName || !isValidBillingPhone){
+      toast.error("Terjadi kesalahan harap periksa kembal idata")
+      return false
+    }
+
+    try {
+      const response = await api.post("onboarding/billing-address",{
+        email : inputBillingEmailRef.current.getValue(),
+        name : inputBillingNameRef.current.getValue(),
+        phone_number : inputBillingPhoneRef.current.getValue(),
+        address : inputBillingAddressRef.current.getValue(),
+      })
+
+      if(response.status === 201){
+        return true;
+      }
+    } catch (error) {
+      toast.error("Terjadi kesalahan, silahkan coba lagi");
+    }
+    setLoadingSubmit(false)
+    return false
+  }
+
+
+  const handleOnChangePackage = (plan) => {
+    setInputCompanyPackage(plan)
+  }
+  const handleOnSubmitForm = (e) => {
+    if(e.hasError) {
+      toast.error("Terjadi kesalahan, harap periksa kembali")
+      return false
+    }
+    setIsOpenModalSubmit(true)
+    return false
+  }
+
+  const handleOnClickSubmitButton = async (e) => { 
+    setLoadingSubmit(true)
+    const isValidBillingName = inputBillingNameRef.current.validate()
+    const isValidBillingPhone = inputBillingPhoneRef.current.validate()
+    const isValidBillingAddress = inputBillingAddressRef.current.validate()
+    const isValidBillingEmail = inputBillingEmailRef.current.validate()
+    if(!isValidBillingAddress || !isValidBillingEmail || !isValidBillingName || !isValidBillingPhone){
+      toast.error("Terjadi kesalahan harap periksa kembal idata")
+      return false
+    }
+
+    try {
+      const response = await api.post("onboarding/billing-address",{
+        email : inputBillingEmailRef.current.getValue(),
+        name : inputBillingNameRef.current.getValue(),
+        phone_number : inputBillingPhoneRef.current.getValue(),
+        address : inputBillingAddressRef.current.getValue(),
+      })
+
+      if(response.status === 201){
+        router.replace("/")
+        return true;
+      }
+    } catch (error) {
+      setLoadingSubmit(false)
+      toast.error("Terjadi kesalahan, silahkan coba lagi");
+    }
+    setLoadingSubmit(false)
+    return false
+  }
   return (
-    <>
+    <div className="container">
       <Card>
+        <h6 className='mb-4 text-xl'>Anda hampir siap menggunakan HealApp!</h6>
+        <p className='text-neutral-500'>
+          Selesaikan langkah-langkah berikut untuk menyelesaikan proses
+          onboarding Anda.
+        </p>
+        <Wizard
+          onSubmit={handleOnSubmitForm}
+          loading={loadingSubmit}
+        >
+          <Wizard.Item header="Data Perusahaan"
+            onNext={handleOnNextStepCompany}
+          >
+            <OnboardingCompany
+              inputCompanyLegalNameRef={inputCompanyLegalNameRef}
+              inputCompanyBrandNameRef={inputCompanyBrandNameRef}
+              inputCompanyPhoneRef={inputCompanyPhoneRef}
+              inputCompanyEmailRef={inputCompanyEmailRef}
+              inputCompanyAddressRef={inputCompanyAddressRef}
+            />
+          </Wizard.Item>
+          <Wizard.Item header="Tax" 
+            onNext={hanldeOnNextStepTax}
+          >
+            <OnboardingTax
+              inputTaxPpnRef={inputTaxPpnRef}
+              inputTaxNpwpRef={inputTaxNpwpRef}
+              inputTaxRemarkRef={inputTaxRemarkRef}
+            />
+            <WizardNavigation />
+          </Wizard.Item>
+          <Wizard.Item header="Pilih Paket" 
+            onNext={handleOnNextStepPackage}
+          >
+            <OnboardingPackage
+              onChange={handleOnChangePackage}
+            />
+          </Wizard.Item>
+          <Wizard.Item
+            header="Informasi Penagihan"
+            onNext={handleNextStepBilling}
+          >
+            <OnboardingBilling
+              inputBillingNameRef={inputBillingNameRef}
+              inputBillingPhoneRef={inputBillingPhoneRef}
+              inputBillingEmailRef={inputBillingEmailRef}
+              inputBillingAddressRef={inputBillingAddressRef}
+            />
+          </Wizard.Item>
+        </Wizard>
+      </Card>
 
-          <h6 className='mb-4 text-xl'>Anda hampir siap menggunakan HealApp!</h6>
-          <p className='text-neutral-500'>
-            Selesaikan langkah-langkah berikut untuk menyelesaikan proses
-            onboarding Anda.
-          </p>
-          <Wizard>
-            <Wizard.Item header="Data Perusahaan"
-              // onNext={async () => {
-              //   console.log("OnboardingPackage onNext called");
-              //     alert("Lengkapi data perusahaan terlebih dahulu!");
-              //   return false;
-              // }}
-            >
-              <OnboardingCompany />
-            </Wizard.Item>
-            <Wizard.Item header="Pilih Paket" 
-              //  onNext={async () => {
-              //   console.log("OnboardingPackage onNext called");
-              //     alert("Lengkapi data perusahaan terlebih dahulu!");
-              //   return false;
-              // }}
-              >
-              <OnboardingPackage 
-              />
-            </Wizard.Item>
-            <Wizard.Item header="Tax">
-              <OnboardingTax />
-              <WizardNavigation />
-            </Wizard.Item>
-            <Wizard.Item header="Informasi Penagihan">
-              <OnboardingBilling />
-              <WizardNavigation />
-            </Wizard.Item>
-            <Wizard.Item header="Selesai">
-              <OnboardingCompleted />
-              <WizardNavigation />
-            </Wizard.Item>
-          </Wizard>
-          {/* Form Wizard Start */}
-          {/* <div className='form-wizard'>
-            <form action='#' method='post'>
-              <div className='form-wizard-header overflow-x-auto scroll-sm pb-8 my-32'>
-                <ul className='list-unstyled form-wizard-list'>
-                  <li
-                    className={`form-wizard-list__item
-                      ${[2, 3, 4, 5].includes(currentStep) && "activated"}
-                    ${currentStep === 1 && "active"} `}
-                  >
-                    <div className='form-wizard-list__line'>
-                      <span className='count'>1</span>
-                    </div>
-                    <span className='text text-xs fw-semibold'>
-                      Pilih Paket{" "}
-                    </span>
-                  </li>
-                  <li
-                    className={`form-wizard-list__item
-                      ${[3, 4, 5].includes(currentStep) && "activated"}
-                    ${currentStep === 2 && "active"} `}
-                  >
-                    <div className='form-wizard-list__line'>
-                      <span className='count'>2</span>
-                    </div>
-                    <span className='text text-xs fw-semibold'>
-                      Data Perusahaan
-                    </span>
-                  </li>
-                  <li
-                    className={`form-wizard-list__item
-                      ${[4, 5].includes(currentStep) && "activated"}
-                    ${currentStep === 3 && "active"} `}
-                  >
-                    <div className='form-wizard-list__line'>
-                      <span className='count'>3</span>
-                    </div>
-                    <span className='text text-xs fw-semibold'>
-                      Tax
-                    </span>
-                  </li>
-                  <li
-                    className={`form-wizard-list__item
-                      ${[5].includes(currentStep) && "activated"}
-                    ${currentStep === 4 && "active"} `}
-                  >
-                    <div className='form-wizard-list__line'>
-                      <span className='count'>4</span>
-                    </div>
-                    <span className='text text-xs fw-semibold'>
-                      Add Location
-                    </span>
-                  </li>
-                  <li
-                    className={`form-wizard-list__item
+      <Modal show={isOpenModalSubmit}>
+        <Modal.Header closeButton>
+          <Modal.Title><h6 className="mb-0">Konfirmasi</h6></Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Apakah Anda yakin semua data sudah benar ?
+        </Modal.Body>
+        <Modal.Footer>
 
-                    ${currentStep === 5 && "active"} `}
-                  >
-                    <div className='form-wizard-list__line'>
-                      <span className='count'>5</span>
-                    </div>
-                    <span className='text text-xs fw-semibold'>Completed</span>
-                  </li>
-                </ul>
-              </div>
-              <fieldset
-                className={`wizard-fieldset ${currentStep === 1 && "show"} `}
-              >
-                <OnboardingCompleted />
-              </fieldset>
-              <fieldset
-                className={`wizard-fieldset ${currentStep === 2 && "show"} `}
-              >
-                <OnboardingPackage />
-              </fieldset>
-              <fieldset
-                className={`wizard-fieldset ${currentStep === 3 && "show"} `}
-              >
-                <OnboardingCompany />
-              </fieldset>
-              <fieldset
-                className={`wizard-fieldset ${currentStep === 4 && "show"} `}
-              >
-                <OnboardingTax />
-              </fieldset>
-              <fieldset
-                className={`wizard-fieldset ${currentStep === 5 && "show"} `}
-              >
-                <OnboardingBilling />
-              </fieldset>
-            </form>
-          </div> */}
-          {/* Form Wizard End */}
-          </Card>
-    </>
+          <Button
+            variant="secondary"
+            onClick={() => setIsOpenModalSubmit(false)}
+            disabled={loadingSubmit}
+          >
+            Batal
+          </Button>
+          <Button
+            onClick={handleOnClickSubmitButton}
+            disabled={loadingSubmit}
+          >
+            {loadingSubmit ? "Menyimpan..." : "Simpan"}
+          </Button>
+        </Modal.Footer>
+      </Modal>  
+    </div>
   );
 }

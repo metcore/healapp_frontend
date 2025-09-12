@@ -269,7 +269,7 @@ export default function Table<T extends object>({
         size={size}
       >
         {caption && <caption className="px-2">{caption}</caption>}
-        <thead className={`${stickyHeader ? "sticky-top" : ""} bg-body-tertiary`}>
+        <thead className={`${stickyHeader ? "" : ""} bg-body-tertiary`}>
           <tr>
             {visibleColumns?.map((col, idx) => {
               const isSorted = sortBy === col.attribute && !!sortDir;
@@ -278,7 +278,7 @@ export default function Table<T extends object>({
                 <th
                   key={idx}
                   scope="col"
-                  className={`text-nowrap ${canSort ? "user-select-none" : ""}`}
+                  className={` ${canSort ? "user-select-none" : ""}`}
                 >
                   <div
                     className={`d-flex align-items-center justify-content-between gap-2 ${

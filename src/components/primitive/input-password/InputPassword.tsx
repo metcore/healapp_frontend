@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import LabelInput from "../label-input/LabelInput";
 import { RuleConfigMap, validate, ValidateOutput } from "@/helper/Validation/Validate";
 import { Icon } from "@iconify/react";
+import Validaiton from "../validation/Validation";
 
 export type inputPasswordRef = {
   validate: () => boolean;
@@ -62,7 +63,7 @@ const InputPassword = forwardRef<inputPasswordRef, InputPasswordProps>(function 
       setError(result);
     }
 
-    onChange(e);
+    onChange?.(e);
   };
   useEffect(() => {
     onValidate?.(error);
@@ -111,13 +112,7 @@ const InputPassword = forwardRef<inputPasswordRef, InputPasswordProps>(function 
         )}
       </div>
 
-      {error && error.length > 0 && (
-        <div className="invalid-feedback d-block">
-          {error.map((err, idx) => (
-            <div key={idx}>{err.error}</div>
-          ))}
-        </div>
-      )}
+      <Validaiton error={error} />
 
       {feedback && (
         <div

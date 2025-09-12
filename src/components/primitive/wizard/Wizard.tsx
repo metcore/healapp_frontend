@@ -25,7 +25,7 @@ interface WizardProps {
   children: ReactElement<WizardItemProps>[] | ReactElement<WizardItemProps>;
   onNext?: () => boolean | Promise<boolean>;
   loading?: boolean;
-  onSubmit: () => void;
+  onSubmit?: () => void;
 }
 
 export default function Wizard({ children, loading, onSubmit }: WizardProps) {

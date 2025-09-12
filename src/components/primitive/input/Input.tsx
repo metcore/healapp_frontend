@@ -109,7 +109,7 @@ const Input = forwardRef<InputRef, InputProps>(function Input(
       },
       getValue: () => inputValue,
       focus: () => inputRef.current?.focus(),
-      setError: (err) => setError(err),
+      setError: (e) => setError(e),
       target: inputRef.current,
       blur: () => inputRef.current.blur()
 
@@ -176,6 +176,11 @@ const Input = forwardRef<InputRef, InputProps>(function Input(
     </>
   );
 
+  useEffect(() => { 
+    if(errors && errors?.length > 0 ){
+      setError(errors)
+    }
+  }, [errors]);
   return (
     <div className="flex">
       {label  && <LabelInput label={label } hint={hint} rules={rules} />}

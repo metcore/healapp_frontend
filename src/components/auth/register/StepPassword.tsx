@@ -68,7 +68,7 @@ export default function StepPassword({refInputPassword, refInputConfirmPassword 
         />
 
         <Form.InputPassword
-          name="confirmPassword"
+          name="password_confirmation"
           icon="solar:lock-password-outline"
           placeholder="Masukan konfirmasi password"
           onChange={handleConfirmChange}

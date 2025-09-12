@@ -1,570 +1,141 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Icon } from "@iconify/react";
 import { WizardNavigation } from "../primitive/wizard/Wizard";
+import { formatNumberRupiah } from "@/helper/formatNumber";
+import api from "@/api/api";
+import { toast } from "react-toastify";
 
-export default function OnboardingPackage() {
+export default function OnboardingPackage({onChange}) {
+  const [billingType, setBillingType] = useState("monthly"); // monthly / yearly
+  const [selectedPlan, setSelectedPlan] = useState(null); // Basic / Pro / Enterprise
+  const [dataPlan, setDataPlan] = useState(null)
+  const handleChangePacakge = (plan) => {
+    console.log("plan", plan)
+    setSelectedPlan(plan)
+    onChange?.(plan)
+  }
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await api.get("/plans");
+        setDataPlan(response.data.data);
+      } catch (error: any) {
+        if (error.response && error.response.status === 400) {
+          toast.error("Data tidak valid, silahkan periksa kembali inputan anda");
+        } else {
+          toast.error("Terjadi kesalahan saat mengirim");
+        }
+      }
+    };
+
+    fetchPlans();
+  }, []);
   return (
-
     <div className="row justify-content-center">
-        <div className="col-xxl-10">
-            <div className="text-center">
-                <h4 className="mb-16">Pilihan Paket</h4>
-            </div>
-            <ul
-                className="nav nav-pills button-tab mt-32 pricing-tab justify-content-center"
-                id="pills-tab"
-                role="tablist"
+      <div className="col-xxl-10">
+        <div className="text-center">
+          <h4 className="mb-16">Pilihan Paket</h4>
+        </div>
+        <ul className="nav nav-pills button-tab mt-32 pricing-tab justify-content-center">
+          <li className="nav-item">
+            <button
+              className={`nav-link px-24 py-10 text-md rounded-pill fw-medium ${
+                billingType === "monthly"
+                  ? "active text-white bg-primary-600"
+                  : "text-secondary-light"
+              }`}
+              onClick={() => setBillingType("monthly")}
             >
-                <li className="nav-item" role="presentation">
-                    <button
-                        className="nav-link px-24 py-10 text-md rounded-pill text-secondary-light fw-medium active"
-                        id="pills-monthly-tab"
-                        data-bs-toggle="pill"
-                        data-bs-target="#pills-monthly"
+              Bulan
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link px-24 py-10 text-md rounded-pill fw-medium ${
+                billingType === "yearly"
+                  ? "active text-white bg-primary-600"
+                  : "text-secondary-light"
+              }`}
+              onClick={() => setBillingType("yearly")}
+            >
+              Yearly
+            </button>
+          </li>
+        </ul>
 
-                        role="tab"
-                        aria-controls="pills-monthly"
-                        aria-selected="true"
-                    >
-                        Monthly
-                    </button>
-                </li>
-                <li className="nav-item" role="presentation">
-                    <button
-                        className="nav-link px-24 py-10 text-md rounded-pill text-secondary-light fw-medium"
-                        id="pills-yearly-tab"
-                        data-bs-toggle="pill"
-                        data-bs-target="#pills-yearly"
-
-                        role="tab"
-                        aria-controls="pills-yearly"
-                        aria-selected="false"
-                        tabIndex={-1}
-                    >
-                        Yearly
-                    </button>
-                </li>
-            </ul>
-            <div className="tab-content" id="pills-tabContent">
-                <div
-                    className="tab-pane fade show active"
-                    id="pills-monthly"
-                    role="tabpanel"
-                    aria-labelledby="pills-monthly-tab"
-                    tabIndex={0}
-                >
-                    <div className="row gy-4">
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan position-relative radius-24 overflow-hidden border bg-lilac-100">
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon1.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-secondary-light">
-                                            For individuals
-                                        </span>
-                                        <h6 className="mb-0">Basic</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-secondary-light mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24">
-                                    $99{" "}
-                                    <span className="fw-medium text-md text-secondary-light">
-                                        /monthly
-                                    </span>{" "}
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-lilac-600 bg-hover-lilac-700 text-white text-center border border-lilac-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan scale-item position-relative radius-24 overflow-hidden border bg-primary-600 text-white">
-                                <span className="bg-white bg-opacity-25 text-white radius-24 py-8 px-24 text-sm position-absolute end-0 top-0 z-1 rounded-start-top-0 rounded-end-bottom-0">
-                                    Popular
-                                </span>
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon2.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-white">
-                                            For startups
-                                        </span>
-                                        <h6 className="mb-0 text-white">Pro</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-white mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24 text-white">
-                                    $199{" "}
-                                    <span className="fw-medium text-md text-white">
-                                        /monthly
-                                    </span>
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-white text-primary-600 text-white text-center border border-white text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan position-relative radius-24 overflow-hidden border bg-success-100">
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon3.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-secondary-light">
-                                            For big companies
-                                        </span>
-                                        <h6 className="mb-0">Enterprise</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-secondary-light mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24">
-                                    $399{" "}
-                                    <span className="fw-medium text-md text-secondary-light">
-                                        /monthly
-                                    </span>
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-success-600 bg-hover-success-700 text-white text-center border border-success-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        {/* List Paket */}
+        <div className="row gy-4 mt-4">
+          {dataPlan?.map((plan) => (
+            <div key={plan.Id} className="col-xxl-4 col-sm-4 pricing-plan-wrapper">
+              <div
+                className={`pricing-plan position-relative radius-24 overflow-hidden border cursor-pointer ${
+                  selectedPlan === plan.Id ? "border-4 border-primary-600" : ""
+                } bg-primary-100`}
+                onClick={() => handleChangePacakge(plan.Id)}
+              >
+                {plan.popular && (
+                  <span className="bg-primary-600 text-white radius-24 py-8 px-24 text-sm position-absolute end-0 top-0 z-1 rounded-start-top-0 rounded-end-bottom-0">
+                    Popular
+                  </span>
+                )}
+                <div className="d-flex align-items-center gap-16">
+                  <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
+                    <Icon icon="mdi:package-variant" className="text-2xl" />
+                  </span>
+                  <div>
+                    <span className="fw-medium text-md text-secondary-light">
+                      {/* {plan.Description} */}
+                    </span>
+                    <h6 className="mb-0">{plan.Name}</h6>
+                  </div>
                 </div>
-                <div
-                    className="tab-pane fade"
-                    id="pills-yearly"
-                    role="tabpanel"
-                    aria-labelledby="pills-yearly-tab"
-                    tabIndex={0}
+
+                <h3 className="mt-16 mb-24">
+                  {formatNumberRupiah(plan.Price)}{" "}
+                  <span className="fw-medium text-md text-secondary-light">
+                    /{billingType}
+                  </span>
+                </h3>
+
+                <ul>
+                  {plan?.features?.map(
+                    (item) => (
+                      <li
+                        key={item}
+                        className="d-flex align-items-center gap-16 mb-16"
+                      >
+                        <span
+                          className={`w-24-px h-24-px d-flex justify-content-center align-items-center bg-primary-600 rounded-circle`}
+                        >
+                          <Icon
+                            icon="iconamoon:check-light"
+                            className="text-white text-lg"
+                          />
+                        </span>
+                        <span className="text-secondary-light text-lg">{item}</span>
+                      </li>
+                    )
+                  )}
+                </ul>
+
+                <button
+                  className={`mt-28 w-100 radius-8 px-12 py-10 text-sm border bg-primary-600 text-white`}
+                  onClick={() => setSelectedPlan(plan.Name)}
                 >
-                    <div className="row gy-4">
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan position-relative radius-24 overflow-hidden border bg-lilac-100">
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon1.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-secondary-light">
-                                            For individuals
-                                        </span>
-                                        <h6 className="mb-0">Basic</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-secondary-light mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24">
-                                    $399{" "}
-                                    <span className="fw-medium text-md text-secondary-light">
-                                        /monthly
-                                    </span>
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-lilac-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-lilac-600 bg-hover-lilac-700 text-white text-center border border-lilac-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan scale-item position-relative radius-24 px-40 py-50 overflow-hidden border bg-primary-600 text-white">
-                                <span className="bg-white bg-opacity-25 text-white radius-24 py-8 px-24 text-sm position-absolute end-0 top-0 z-1 rounded-start-top-0 rounded-end-bottom-0">
-                                    Popular
-                                </span>
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon2.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-white">
-                                            For startups
-                                        </span>
-                                        <h6 className="mb-0 text-white">Pro</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-white mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24 text-white">
-                                    $699{" "}
-                                    <span className="fw-medium text-md text-white">
-                                        /monthly
-                                    </span>
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-white rounded-circle text-primary-600">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-white text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-white text-primary-600 text-white text-center border border-white text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                        <div className="col-xxl-4 col-sm-6 pricing-plan-wrapper">
-                            <div className="pricing-plan position-relative radius-24 overflow-hidden border bg-success-100">
-                                <div className="d-flex align-items-center gap-16">
-                                    <span className="w-72-px h-72-px d-flex justify-content-center align-items-center radius-16 bg-base">
-                                        <img
-                                            src="assets/images/pricing/price-icon3.png"
-                                            alt=""
-                                        />
-                                    </span>
-                                    <div className="">
-                                        <span className="fw-medium text-md text-secondary-light">
-                                            For big companies
-                                        </span>
-                                        <h6 className="mb-0">Enterprise</h6>
-                                    </div>
-                                </div>
-                                <p className="mt-16 mb-0 text-secondary-light mb-28">
-                                    Lorem ipsum dolor sit amet doloroli sitiol conse ctetur
-                                    adipiscing elit.{" "}
-                                </p>
-                                <h3 className="mb-24">
-                                    $999{" "}
-                                    <span className="fw-medium text-md text-secondary-light">
-                                        /monthly
-                                    </span>
-                                </h3>
-                                <span className="mb-20 fw-medium">What’s included</span>
-                                <ul>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            All analytics features
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 250,000 tracked visits
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16 mb-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Normal support
-                                        </span>
-                                    </li>
-                                    <li className="d-flex align-items-center gap-16">
-                                        <span className="w-24-px h-24-px d-flex justify-content-center align-items-center bg-success-600 rounded-circle">
-                                            <Icon
-                                                icon="iconamoon:check-light"
-                                                className="text-white text-lg   "
-                                            />
-                                        </span>
-                                        <span className="text-secondary-light text-lg">
-                                            Up to 3 team members
-                                        </span>
-                                    </li>
-                                </ul>
-                                <button
-
-                                    className="bg-success-600 bg-hover-success-700 text-white text-center border border-success-600 text-sm btn-sm px-12 py-10 w-100 radius-8 mt-28"
-                                >
-                                    Get started
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                  {selectedPlan === plan.Name ? "Selected" : "Get started"}
+                </button>
+              </div>
             </div>
+          ))}
+        </div>
 
-                        <WizardNavigation />
+        {/* Navigasi Wizard */}
+      </div>
+        <div className="mt-5 ">
+          <WizardNavigation />
         </div>
     </div>
   );

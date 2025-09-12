@@ -10,6 +10,7 @@ import React, {
 export type InputOtpRef = {
   validate: () => boolean;
   getValue: () => string;
+  setError: (err: string[]) => void;
 };
 
 type InputOtpProps = {
@@ -52,6 +53,7 @@ const InputOtp = forwardRef<InputOtpRef, InputOtpProps>(function InputOtp(
   useImperativeHandle(ref, () => ({
     validate: validateOtp,
     getValue,
+    setError: (e) => setError(e),
   }), [rules]);
 
   const handleChange = (value: string, index: number) => {

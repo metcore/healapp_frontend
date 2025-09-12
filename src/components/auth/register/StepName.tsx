@@ -14,10 +14,10 @@ const rules = {
   min: { value: 5, message: "Minimal 5 karakter" },
 }
 type StepNameProps = {
-  refInputFirstName: React.RefObject<InputRef>;
+  refInputName: React.RefObject<InputRef>;
   refInputLastnName: React.RefObject<InputRef>;
 };
-export default function StepName({ refInputFirstName, refInputLastnName }: StepNameProps) {
+export default function StepName({ refInputName }: StepNameProps) {
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [hasError, setHasError] = useState<boolean>(false)
@@ -42,10 +42,10 @@ export default function StepName({ refInputFirstName, refInputLastnName }: StepN
         <h6 className="text-semibold mb-0">Siapa Nama Anda</h6>
         <p className="mb-0">Masukan Nama Lengkap Anda</p>
         <Form.Input
-          name="first_name"
-          placeholder="Masukan nama depan"
+          name="name"
+          placeholder="Masukan nama lengkap anda"
           onChange={handleChange}
-          label="Nama depan"
+          label="Nama lengkap"
           rules={ {
             required: { message: "Wajib diisi" },
             min: { value: 3, message: "Minimal 3 karakter" },
@@ -53,19 +53,7 @@ export default function StepName({ refInputFirstName, refInputLastnName }: StepN
           hasError={hasError}
           feedback={feedback}
           onValidate={handleOnError}
-          ref={refInputFirstName}
-        />
-        <Form.Input
-          label="Nama belakang"
-          name="last_name"
-          placeholder="Masukan nama belakang"
-          hasError={hasError}
-          feedback={feedback}
-          onChange={handleChange}
-          ref={refInputLastnName}
-          rules={ {
-            min: { value: 3, message: "Minimal 3 karakter" },
-          }}
+          ref={refInputName}
         />
         <WizardNavigation />
       </div>

@@ -1,17 +1,33 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { ToastContainer } from "react-toastify";
+import Button from "@/components/primitive/button/Button";
+import api from "@/api/api";
 
 const MasterLayout = ({ children }) => {
   let pathname = usePathname();
   let [sidebarActive, seSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
   const location = usePathname();
+  const router = useRouter();
 
+  const handleLogout = async () => {
+    try {
+      const response = await api.post('/logout');
+      console.log(response)
+      if (response.status === 200) {
+        router.push('/auth/login');
+      } else {
+        console.error('Logout failed');
+      } 
+    } catch (error) {
+      console.error('An error occurred during logout:', error);
+    } 
+  };
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -552,13 +568,13 @@ const MasterLayout = ({ children }) => {
                         </Link>
                       </li>
                       <li>
-                        <Link
+                        <Button
+                          onClick={handleLogout}
                           className='dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3'
-                          href='#'
                         >
                           <Icon icon='lucide:power' className='icon text-xl' />{" "}
                           Log Out
-                        </Link>
+                        </Button>
                       </li>
                     </ul>
                   </div>

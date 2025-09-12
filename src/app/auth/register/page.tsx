@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 export const metadata = {
   title: `${process.env.NEXT_PUBLIC_APP_NAME} - Pendaftaran akun`,
   description:
-    `${process.env.NEXT_PUBLIC_APP_NAME} is a developer-friendly, ready-to-use admin template designed for building attractive, scalable, and high-performing web applications.`,
+    `${process.env.NEXT_PUBLIC_APP_NAME} Pendaftaran akun aplikasi heal app - software untuk rumah sakit, klinik serta klinik kecantikan.`,
 };
 export default function Page() {
   return (
@@ -22,8 +22,8 @@ export default function Page() {
         pauseOnHover
         theme="light"
       />
-        <Header />
-        <RegisterLayer />
-      </section>
+      <Header />
+      <RegisterLayer />
+    </section>
   );
 }

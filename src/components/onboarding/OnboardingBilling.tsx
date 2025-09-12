@@ -1,8 +1,15 @@
 import Card from "../primitive/card/Card";
+import Form from "../primitive/form/Form";
 import Input from "../primitive/input/Input";
 import TextArea from "../primitive/textarea/TextArea";
+import { WizardNavigation } from "../primitive/wizard/Wizard";
 
-export default function OnboardingBilling(){
+export default function OnboardingBilling({
+  inputBillingNameRef,
+  inputBillingPhoneRef,
+  inputBillingEmailRef,
+  inputBillingAddressRef
+}){
     return (
   
       <div className="row justify-content-center">
@@ -15,44 +22,57 @@ export default function OnboardingBilling(){
           </div>
           <Card>
             <div className="d-flex flex-column gap-24">
-              <Input 
-                label="Nama Penagihan *"
+              <Form.Input 
+                label="Nama Penagihan"
                 placeholder="Masukkan nama penagihan"
-                name="companyName"
+                name="billing_name"
                 onChange={(e) => console.log(e.target.value)}
-                rules={{ required: true }}
-                hasError={false}
-                // feedback="Nama perusahaan tidak boleh kosong"
+                rules={ {
+                  required: { message: "Wajib diisi" },
+                  min: { value: 3, message: "Minimal 4 karakter" },
+                }}
+                ref={inputBillingNameRef}
               />
-              <Input 
-                label="Email Penagihan *"
+              <Form.Input 
+                label="Email Penagihan"
                 placeholder="Masukkan email penagihan"
-                name="companyPhone"
+                name="billing_email"
+                icon="mdi:email"
                 onChange={(e) => console.log(e.target.value)}
-                rules={{ required: true, pattern: /^\d+$/ }}
-                hasError={false}
-                // feedback="Nomor telepon tidak valid"
+                ref={inputBillingEmailRef}
+                rules={ {
+                  required: { message: "Wajib diisi" },
+                  min: { value: 3, message: "Minimal 4 karakter" },
+                  email: { message: "Harus berupa format email, Misal : metcore@gtmail.com" },
+                }}
               />
-
-              <Input 
-                label="Nomor Telepon Penagihan *"
+              <Form.Input 
+                label="Nomor Telepon Penagihan"
                 placeholder="Misal : +62 812-3456-7890"
-                name="companyPhone"
+                name="billing_phone"
+                icon="mdi:phone"
                 onChange={(e) => console.log(e.target.value)}
-                rules={{ required: true, pattern: /^\d+$/ }}
-                hasError={false}
+                rules={ {
+                  required: { message: "Wajib diisi" },
+                  min: { value: 3, message: "Minimal 4 karakter" },
+                  phone: { message: "Harus berupa nomor telepon yang valid, Misal : 6289604038338" },
+                }}
+                ref={inputBillingAddressRef}
                 // feedback="Nomor telepon tidak valid"
               />
-              <TextArea 
-                label="Alamat Penagihan *"
+              <Form.TextArea 
+                label="Alamat Penagihan "
                 placeholder="Misal : Jl. Contoh No. 123, Jakarta"
-                name="companyAddress"
+                name="billing_address"
                 onChange={(e) => console.log(e.target.value)}
-                rules={{ required: true }}
-                hasError={false}
+                rules={{
+                  required: { message: "Wajib diisi" },
+                  min: { value: 3, message: "Minimal 4 karakter" },
+                }}
+                ref={inputBillingPhoneRef}
                 // feedback="Alamat perusahaan tidak boleh kosong"
               />
-              <button type="submit" className="btn btn-primary w-100">Lanjutkan</button>
+              <WizardNavigation />
 
             </div>
           </Card>

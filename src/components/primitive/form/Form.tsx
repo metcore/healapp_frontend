@@ -211,6 +211,7 @@ Form.Input = forwardRef<InputRef, any>((props, forwardedRef) => {
     focus: () => innerRef.current?.focus?.(),
     current: innerRef.current?.current ?? null,
     setValue: (v: any) => innerRef.current?.setValue?.(v),
+    setError: (e) => innerRef.current?.setError?.(e),
   }));
 
   return <Input ref={innerRef} {...props} />;
@@ -225,6 +226,7 @@ Form.InputPassword = forwardRef<inputPasswordRef, any>((props, forwardedRef) => 
     focus: () => innerRef.current?.focus?.(),
     current: innerRef.current?.current ?? null,
     setValue: (v: any) => innerRef.current?.setValue?.(v),
+    setError: () => innerRef.current?.setError?.(),
   }));
 
   return <InputPassword ref={innerRef} {...props} />;
@@ -254,6 +256,7 @@ Form.InputOtp = forwardRef<InputOtpRef, any>((props, forwardedRef) => {
     focus: () => innerRef.current?.focus?.(),
     current: innerRef.current?.current ?? null,
     setValue: (v: any) => innerRef.current?.setValue?.(v),
+    setError: () => innerRef.current?.setError?.(),
   }));
 
   return <InputOtp ref={innerRef} {...props} />;
@@ -361,12 +364,16 @@ Form.Switch = forwardRef<SwitchRef, any>((props, forwardedRef) => {
 Form.ButtonSubmit = function ButtonSubmit({
   children,
   className,
+  loading,
+  disabled
 }: {
   children?: ReactNode;
   className?: string;
+  loadiing?: boolean;
+  disabled?: boolean;
 }) {
   return (
-    <Button type="submit" className={className}>
+    <Button type="submit" loading={loading} disabled={disabled} className={className}>
       {children || 'Simpan'}
     </Button>
   );
@@ -375,6 +382,8 @@ Form.ButtonSubmit = function ButtonSubmit({
 export default Form as unknown as typeof Form & {
   Input: typeof Form.Input;
   RadioButton: typeof Form.RadioButton;
+  
+  InputOtp: typeof Form.InputOtp;
   Select: typeof Form.Select;
   InputNumber: typeof Form.InputNumber;
   CounterButton: typeof Form.CounterButton;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "@/components/primitive/input/Input";
 import InputPassword from "./primitive/input-password/InputPassword";
 import Checkbox from "./primitive/checkbox/Checkbox";
@@ -8,6 +8,13 @@ import { useRouter } from "next/navigation";
 import { validate } from "@/helper/Validation/Validate";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import Form from "./primitive/form/Form";
+import api from "@/api/api";
+import { toast } from "react-toastify";
+import { AppDispatch, RootState } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { login } from "@/redux/slice/auth/authSlice";
+import { useSelector } from "react-redux";
 
 // Aturan validasi
 const emailRules = {
@@ -22,55 +29,50 @@ const passwordRules = {
 
 export default function SignInLayer() {
   const router = useRouter();
-
-  // State input dan error
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
+  const dispatch = useDispatch<AppDispatch>()
+  const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false);  
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const token = useSelector((state: RootState) => state.auth.token);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // Hindari reload
-
-    // Validasi email
-    const emailValidation = validate(email, emailRules);
-    const passwordValidation = validate(password, passwordRules);
-
-    if (emailValidation.length > 0) {
-      setEmailError(
-        emailValidation.map((err) => `<div>${err.error}</div>`).join("")
-      );
-    } else {
-      setEmailError("");
+  const handleSubmit = async (e) => {
+    if(e?.hasError){
+      toast.error("Terdapat error pada form, silakan periksa kembali.");
+      return false;
     }
 
-    if (passwordValidation.length > 0) {
-      setPasswordError(
-        passwordValidation.map((err) => `<div>${err.error}</div>`).join("")
-      );
-    } else {
-      setPasswordError("");
+    setLoadingSubmit(true)
+    try {
+      const response = await api.post('/auth/login', e?.values);
+      if (response.status === 200) {
+        dispatch(login({ user: response.data.user}));
+        router.push("/");
+      } else {
+        setLoadingSubmit(false)
+      } 
+    } catch (error) {
+      setLoadingSubmit(false)
+      setEmailError([{error: error?.response?.data?.message}]);
+      toast.error("Gagal login, silahkan coba lagi");
     }
-
-    // Jika semua valid, redirect
-    if (emailValidation.length === 0 && passwordValidation.length === 0) {
-      router.push("/", { scroll: false });
-    }
+    
   };
 
+  useEffect(() => { 
+        console.log(token)
+  }, []);
   return (
     <section className="auth bg-base d-flex flex-wrap">
       <div className="auth-left d-lg-block d-none">
         <div className="d-flex align-items-center flex-column h-100 justify-content-center">
-          <img src="assets/images/auth/login-img.png" alt="" />
+          <img src="/assets/images/auth/login-img.png" alt="" />
         </div>
       </div>
       <div className="auth-right py-32 px-24 d-flex flex-column justify-content-center">
         <div className="max-w-464-px mx-auto w-100">
           <div>
-            <Link href="/" className="mb-40 max-w-290-px">
-              <img src="assets/images/logo.png" alt="Logo" />
+            <Link href="/" className="mb-40 max-w-100-px">
+              <img src="/assets/images/logo.png" alt="Logo" />
             </Link>
             <h4 className="mb-12">Masuk ke akun Anda</h4>
             <p className="mb-32 text-secondary-light text-lg">
@@ -78,26 +80,23 @@ export default function SignInLayer() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <Form onSubmit={handleSubmit}>
             <div className="d-flex flex-column gap-3">
-              <Input
+              <Form.Input
                 name="email"
                 placeholder="Masukan email anda"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 icon="mage:email"
-                hasError={!!emailError}
-                feedback={emailError}
+                rules={emailRules}
+                errors={emailError}
               />
 
-              <InputPassword
+              <Form.InputPassword
                 name="password"
                 placeholder="Masukan password anda"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 icon="solar:lock-password-outline"
                 hasError={!!passwordError}
                 feedback={passwordError}
+                rules={passwordRules}
               />
 
               <div className="d-flex justify-content-between gap-2">
@@ -111,19 +110,16 @@ export default function SignInLayer() {
                     },
                   }}
                 />
-                <Link href="#" className="text-primary-600 fw-medium">
-                  Forgot Password?
+                <Link href="/forgot-password" className="text-primary-600 fw-medium">
+                  Lupa Password?
                 </Link>
               </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary text-sm btn-sm px-12 py-16 w-100 radius-12"
-              >
+              
+              <Form.ButtonSubmit loading={loadingSubmit} disabled={loadingSubmit}>
                 Sign In
-              </button>
+              </Form.ButtonSubmit>
 
-              <div className="center-border-horizontal text-center">
+              {/* <div className="center-border-horizontal text-center">
                 <span className="bg-base z-1 px-4">Or sign in with</span>
               </div>
 
@@ -148,9 +144,9 @@ export default function SignInLayer() {
                   />
                   Google
                 </button>
-              </div>
+              </div> */}
             </div>
-          </form>
+          </Form>
         </div>
       </div>
     </section>

@@ -167,7 +167,7 @@ const UserList = () => {
       <Table
         // onFilterChange={(e)=>console.log(e)}
         // onSortChange={(e)=>console.log(users)}
-        url="/users"
+        url="/user"
         columns={[
           {
             attribute:"id",

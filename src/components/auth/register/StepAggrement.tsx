@@ -13,22 +13,11 @@ type StepPasswordProps = {
 };
 export default function StepAggrement({refCheckboxAggrement}: StepPasswordProps) {
   const [email, setEmail] = useState<string>("");
-  const [error, setError] = useState<string>("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
   };
-  
-  const handleClick = () => {
-    if(error.length == 0){
-      router.push('/auth/register/step5', { scroll: false })
-    }
-  };
-
-  const handleOnError = (e) => {
-    setError(e)
-  }
 
   return (
     <Card>
