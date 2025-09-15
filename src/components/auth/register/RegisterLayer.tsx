@@ -17,12 +17,14 @@ import Link from "next/link";
 import api from "@/api/api";
 import { toast } from "react-toastify";
 import { set } from "react-datepicker/dist/date_utils";
+import StepBrand from "./StepBrand";
 export default function RegisterLayer() {
 
   const emailStepRef = useRef<StepEmailRef>(null);
   const [loadingNextStep, setLoadingNextStep] = useState<boolean>(false); 
   const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false)
   const refInputName = useRef<InputRef>(null);
+  const refInputBrand = useRef<InputRef>(null);
   const inputPasswordRef = useRef<inputPasswordRef>(null);
   const inputConfirmPasswordRef = useRef<inputPasswordRef>(null);
   const checkboxAggrementRef = useRef<CheckboxRef>(null);
@@ -48,7 +50,8 @@ export default function RegisterLayer() {
 
 
   const handleClickModal = () => {
-    router.push(`/auth/otp-email?id=${dataResponse.ID}`, undefined, { scroll: false });
+    console.log(dataResponse)
+    router.push(`/auth/otp-email?user_id=${dataResponse.user.ID}&vendor_id=${dataResponse?.vendor?.ID}`, undefined, { scroll: false });
   }
   
   const handleOnNextStepEmail = async () => {
@@ -131,6 +134,16 @@ export default function RegisterLayer() {
                   refInputName={refInputName}
                 />
               </Wizard.Item>
+              {/* <Wizard.Item
+                header="Brand"
+                onNext={ () => {
+                  return validateStepName();
+                }}
+              >
+                <StepBrand 
+                  refInputBrand={refInputBrand}
+                />
+              </Wizard.Item> */}
               <Wizard.Item
                 header="Password"
                 onNext={ () => {

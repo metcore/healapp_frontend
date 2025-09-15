@@ -55,6 +55,13 @@ export default function ModalFormAdditionalCost({isOpen, onClose}){InputNumberTy
       >
         <Modal.Body>
           <div className="d-flex flex-column gap-2">
+            <Form.Input
+              name="name"
+              rules={ {
+                required: { message: "Wajib diisi" },
+              }}
+              label="Namanya"
+            />
             <Form.RadioButton
               name="type"
               hint="Tentukan mana jenis amountnnya"
@@ -73,12 +80,23 @@ export default function ModalFormAdditionalCost({isOpen, onClose}){InputNumberTy
               disabled={typeAmount ? false : true}
               rules={ {
                 required: { message: "Wajib diisi" },
-                min: {value:0, message:"tess"},
+                min: {value:0, message:"Minimal 0"},
               }}
-              name="amount"
               format={typeAmount}
               tooltip={!typeAmount ? "Pilih jenis amount terlebih dahulu" : ""}
               label="Nilainya"
+            />
+            <Form.DatePicker
+              name="effective_date"
+              rules={ {
+                required: { message: "Wajib diisi" },
+                min: {value:0, message:"Minimal 0"},
+              }}
+              label="Tanggal Berlaku"
+            />
+            <Form.TextArea
+              name="remark"
+              label="Catatan tambahan"
             />
           </div>
         </Modal.Body>

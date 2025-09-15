@@ -118,6 +118,7 @@ const Select = forwardRef<SelectRef, SelectProps>(function Select(
   }, [error]);
 
   useEffect(() => {
+    console.log("otpions", options)
     const newVal = options?.find((o) => o.value === value) || null;
     setSelected(newVal);
   }, [value, options]);

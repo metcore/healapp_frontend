@@ -15,6 +15,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/slice/auth/authSlice";
 import { useSelector } from "react-redux";
+import { setVendor } from "@/redux/slice/auth/vendorSlice";
 
 // Aturan validasi
 const emailRules = {
@@ -45,8 +46,16 @@ export default function SignInLayer() {
     try {
       const response = await api.post('/auth/login', e?.values);
       if (response.status === 200) {
-        dispatch(login({ user: response.data.user}));
-        router.push("/");
+        dispatch(login({ user: response?.data?.user}));
+        if(!response?.data?.user?.IsFinishOnboarding){
+          router.replace("/onboarding");
+        }else{
+          console.log("vendor", response?.data?.user?.UserVendors?.[0]?.VendorId)
+          if(response?.data?.user?.UserVendors.length === 1){
+           dispatch(setVendor({vendor_id:response?.data?.user?.UserVendors?.[0]?.VendorId}))
+          }
+          router.push("/");
+        }
       } else {
         setLoadingSubmit(false)
       } 

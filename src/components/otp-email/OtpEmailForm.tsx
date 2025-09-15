@@ -17,7 +17,8 @@ export default function OtpEmailForm() {
   const router = useRouter();
 
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const user_id = searchParams.get('user_id');
+  const vendor_id = searchParams.get('vendor_id');
 
   const handleChange = (e:string) => {
     setValue(e)
@@ -32,7 +33,8 @@ export default function OtpEmailForm() {
   const resendOtp = () => {
     setLoadingSubmit(true)
     api.post('/auth/register/resend-otp', {
-      user_id: id
+      user_id: user_id,
+      vendor_id:user_id,
     }).then((response) => {
       setLoadingSubmit(false)
       toast.success("Berhasil mengirim ulang OTP, silahkan cek email anda")
@@ -48,7 +50,8 @@ export default function OtpEmailForm() {
     }
     setLoadingSubmit(true)
     api.post('/auth/register/activation', {
-      user_id: id,
+      user_id: user_id,
+      vendor_id: vendor_id,
       otp: e?.values?.otp
     }).then((response) => {
       toast.success("Akun berhasil diaktivasi, silahkan login")

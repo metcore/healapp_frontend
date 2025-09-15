@@ -367,7 +367,7 @@ export default function Table<T extends object>({
       </TableBootstrap>
 
       <Pagination
-        total={dataFetch.total}
+        total={dataFetch?.meta?.total}
         perPage={DEFAULT_PER_PAGE}
         onPageChange={handleOnChangePagination}
         page={params.page}

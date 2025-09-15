@@ -2,7 +2,7 @@ import Card from "../primitive/card/Card";
 import Input from "../primitive/input/Input";
 import TextArea from "../primitive/textarea/TextArea";
 
-export default function OnboardingCompany({inputTaxPpnRef, inputTaxNpwpRef, inputTaxRemarkRef}) {
+export default function OnboardingCompany({data, inputTaxPpnRef, inputTaxNpwpRef, inputTaxRemarkRef}) {
   return (
     <div className="row justify-content-center">
       <div className="col-xxl-10">
@@ -15,6 +15,7 @@ export default function OnboardingCompany({inputTaxPpnRef, inputTaxNpwpRef, inpu
         <Card>
           <div className="d-flex flex-column gap-24">
             <Input 
+              value={data?.company?.Npwp}
               label="Nomor NPWP "
               placeholder="Masukkan Nomor Pokok Wajib Pajak"
               hint="Kosongkan jika tidak ada NPWP"
@@ -23,6 +24,7 @@ export default function OnboardingCompany({inputTaxPpnRef, inputTaxNpwpRef, inpu
               // feedback="Nomor NPWP tidak valid"
             />
             <Input 
+              value={data?.tax?.Amount}
               label="Pajak Pertambahan Nilai (PPN)"
               placeholder="Msal: 12%"
               name="ppn"
@@ -30,9 +32,10 @@ export default function OnboardingCompany({inputTaxPpnRef, inputTaxNpwpRef, inpu
               // feedback="Persentase PPN tidak valid"
             />
             <TextArea 
+              // value={data?.tax?.Remark}
               label="Keterangan Pajak"
               placeholder="Masukkan keterangan tambahan mengenai pajak"
-              name="taxDescription"    
+              name="remark"    
               ref={inputTaxRemarkRef}
               // feedback="Nomor telepon tidak valid"
             />

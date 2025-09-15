@@ -199,14 +199,14 @@ const UserList = () => {
                 />
                 <div className='flex-grow-1'>
                   <span className='text-md mb-0 fw-normal text-secondary-light'>
-                    {data.Name}
+                    {data.name}
                   </span>
                 </div>
               </div>
             )
           },
           {
-            attribute:"Email",
+            attribute:"email",
             sortable: true,
             label:"Email",
           },

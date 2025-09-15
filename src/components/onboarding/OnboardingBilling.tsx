@@ -5,6 +5,7 @@ import TextArea from "../primitive/textarea/TextArea";
 import { WizardNavigation } from "../primitive/wizard/Wizard";
 
 export default function OnboardingBilling({
+  data,
   inputBillingNameRef,
   inputBillingPhoneRef,
   inputBillingEmailRef,
@@ -27,6 +28,7 @@ export default function OnboardingBilling({
                 placeholder="Masukkan nama penagihan"
                 name="billing_name"
                 onChange={(e) => console.log(e.target.value)}
+                value={data?.billingAddress?.Name}
                 rules={ {
                   required: { message: "Wajib diisi" },
                   min: { value: 3, message: "Minimal 4 karakter" },
@@ -38,7 +40,7 @@ export default function OnboardingBilling({
                 placeholder="Masukkan email penagihan"
                 name="billing_email"
                 icon="mdi:email"
-                onChange={(e) => console.log(e.target.value)}
+                value={data?.billingAddress?.Email}
                 ref={inputBillingEmailRef}
                 rules={ {
                   required: { message: "Wajib diisi" },
@@ -51,7 +53,7 @@ export default function OnboardingBilling({
                 placeholder="Misal : +62 812-3456-7890"
                 name="billing_phone"
                 icon="mdi:phone"
-                onChange={(e) => console.log(e.target.value)}
+                value={data?.billingAddress?.PhoneNumber}
                 rules={ {
                   required: { message: "Wajib diisi" },
                   min: { value: 3, message: "Minimal 4 karakter" },
@@ -65,6 +67,7 @@ export default function OnboardingBilling({
                 placeholder="Misal : Jl. Contoh No. 123, Jakarta"
                 name="billing_address"
                 onChange={(e) => console.log(e.target.value)}
+                value={data?.billingAddress?.Address}
                 rules={{
                   required: { message: "Wajib diisi" },
                   min: { value: 3, message: "Minimal 4 karakter" },

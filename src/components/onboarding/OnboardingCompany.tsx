@@ -6,6 +6,7 @@ import TextArea from "../primitive/textarea/TextArea";
 import { WizardNavigation } from "../primitive/wizard/Wizard";
 
 export default function OnboardingCompany({
+  data,
   inputCompanyBrandNameRef,
   inputCompanyLegalNameRef,
   inputCompanyPhoneRef,
@@ -25,6 +26,7 @@ export default function OnboardingCompany({
           <div className="d-flex flex-column gap-24">
             <Form.Input 
               label="Nama Brand"
+              value={data?.company?.Name}
               placeholder="Misal : RS Heal App"
               name="companyBrandName"
               ref={inputCompanyBrandNameRef}
@@ -35,6 +37,7 @@ export default function OnboardingCompany({
             />
             <Form.Input 
               label="Nama Perusahaan"
+              value={data?.company?.LegalName}
               placeholder="Misal : PT. HealApp Indonesia / HealApp"
               name="companyLegalName"
               ref={inputCompanyLegalNameRef}
@@ -46,6 +49,7 @@ export default function OnboardingCompany({
             <Form.Input 
               label="Email"
               placeholder="Misal : RS Heal App"
+              value={data?.company?.Email}
               icon="mdi:email"
               name="companyEmail"
               ref={inputCompanyEmailRef}
@@ -61,6 +65,7 @@ export default function OnboardingCompany({
               placeholder="Misal : +62 812-3456-7890"
               name="companyPhone"
               ref={inputCompanyPhoneRef}
+              value={data?.company?.Phone}
               rules={ {
                 required: { message: "Wajib diisi" },
                 min: { value: 3, message: "Minimal 4 karakter" },
@@ -72,6 +77,7 @@ export default function OnboardingCompany({
               placeholder="Misal : Jl. Contoh No. 123, Jakarta"
               name="companyAddress"
               onChange={(e) => console.log(e.target.value)}
+              value={data?.company?.Address}
               rules={ {
                 required: { message: "Wajib diisi" },
                 min: { value: 3, message: "Minimal 4 karakter" },

@@ -2,7 +2,7 @@
 import OnboardingLayer from "@/components/onboarding/OnboardingLayer";
 import Header from "@/masterLayout/Header";
 import MasterLayout from "@/masterLayout/MasterLayout"
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function Page(){
@@ -12,6 +12,7 @@ export default function Page(){
   },[])
   return (
     <>
+      <Suspense>
       <ToastContainer 
         position="top-center"
         autoClose={5000}
@@ -26,6 +27,7 @@ export default function Page(){
       />
       <Header />
       <OnboardingLayer />
+      </Suspense>
     </>
   );
 }

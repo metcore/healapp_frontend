@@ -7,9 +7,14 @@ import { Icon } from "@iconify/react";
 import { ToastContainer } from "react-toastify";
 import Button from "@/components/primitive/button/Button";
 import api from "@/api/api";
+import { useDispatch } from "react-redux";
+import { setVendor } from "@/redux/slice/auth/vendorSlice";
+import { logout } from "@/redux/slice/auth/authSlice";
+import VendorProvider from "@/provider/VendorProvider";
 
 const MasterLayout = ({ children }) => {
   let pathname = usePathname();
+  const dispatch = useDispatch()
   let [sidebarActive, seSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
   const location = usePathname();
@@ -20,6 +25,8 @@ const MasterLayout = ({ children }) => {
       const response = await api.post('/logout');
       console.log(response)
       if (response.status === 200) {
+        dispatch(logout())
+        dispatch(setVendor(null))
         router.push('/auth/login');
       } else {
         console.error('Logout failed');
@@ -586,7 +593,12 @@ const MasterLayout = ({ children }) => {
         </div>
 
         {/* dashboard-main-body */}
-        <div className='dashboard-main-body'>{children}</div>
+        <div className='dashboard-main-body'>
+          <VendorProvider>
+            {children}
+          </VendorProvider>
+
+        </div>
 
         {/* Footer section */}
         <footer className='d-footer'>

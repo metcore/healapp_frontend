@@ -7,6 +7,8 @@ import Select from "../primitive/select/Select";
 import Button from "../primitive/button/Button";
 import UserAccessBranchForm from "./UserAccessBranchForm";
 import { toast } from "react-toastify";
+import api from "@/api/api";
+import { useRouter } from "next/navigation";
 
 /**
  * Modernized User Form with RBAC (Role-Based Access Control)
@@ -94,6 +96,8 @@ const DEFAULT_PERMISSIONS = PERMISSION_MODULES.reduce((acc, m) => {
 }, {});
 
 export default function UserForm() {
+  const router = useRouter();
+  const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false)
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [role, setRole] = useState("receptionist");
   const [permissions, setPermissions] = useState(
@@ -121,11 +125,11 @@ export default function UserForm() {
 
   const roleOptions = useMemo(
     () => [
-      { label: ROLE_PRESETS.account_manager.label, value: "account_manager" },
-      { label: ROLE_PRESETS.receptionist.label, value: "receptionist" },
-      { label: ROLE_PRESETS.dokter.label, value: "dokter" },
-      { label: ROLE_PRESETS.nurse.label, value: "nurse" },
-      { label: ROLE_PRESETS.admin.label, value: "admin" },
+      { label: ROLE_PRESETS.account_manager.label, value: "SUPERADMIN" },
+      { label: ROLE_PRESETS.receptionist.label, value: "CASHIER" },
+      { label: ROLE_PRESETS.dokter.label, value: "DOCTOR" },
+      { label: ROLE_PRESETS.nurse.label, value: "FINANCE" },
+      { label: ROLE_PRESETS.admin.label, value: "THERAPIST" },
     ],
     []
   );
@@ -179,19 +183,28 @@ export default function UserForm() {
     );
   }, [permissions]);
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
+    console.log(e)
     if(e.hasError) {
       toast.error("Gagal simpan periksa kembali data")
       return
     }
-
+    setLoadingSubmit(true)
+    try {
+      const response = await api.post("user", e.values)
+      if(response.status == 201){
     toast.success("Data berhasil disimpan")
+        router.push("/user")
+      }
+    } catch (error) {
+      toast.error("terjadi kesalahan silahkan coba kembali")
+    }
+    setLoadingSubmit(false)
   }
   return (
     <Form onSubmit={handleSubmit}>
 
       <div className="row g-3">
-        {/* Left column */}
         <div className="col-xxl-7 col-xl-7 col-lg-8">
           <div className="d-flex flex-column gap-3">
             <Card
@@ -202,8 +215,6 @@ export default function UserForm() {
               }
             >
               <div className="d-flex gap-3 align-items-start flex-wrap">
-
-                {/* Fields */}
                 <div className="flex-grow-1 min-w-0" style={{ minWidth: 260 }}>
                   <div className="d-flex flex-column gap-2">
                     <Form.Input
@@ -238,8 +249,18 @@ export default function UserForm() {
                         min: { value: 8, message: "Minimal 8 digit" },
                       }}
                     />
+                  <Form.Select
+                    label="Role Akses"
+                    name="role"
+                    value={role}
+                    // onChange={(val) => applyRolePreset(val)}
+                    options={roleOptions}
+                    rules={{
+                      required: { message: "Wajib diisi" }
+                    }}
+                  />
 
-                    <div className="row g-2">
+                    {/* <div className="row g-2">
                       <div className="col-md-6">
                         <Select
                           name="working_hour"
@@ -259,44 +280,22 @@ export default function UserForm() {
                           ]}
                         />
                       </div>
-                    </div>
-                    <Form.TextArea
+                    </div> */}
+                    {/* <Form.TextArea
                       name="Note"
                       label="Note"
                       hint="Catatan tambahan saja untuk user ini"
-                    />
+                    /> */}
                   </div>
                 </div>
               </div>
             </Card>
 
             <UserAccessBranchForm />
-
-            {/* Security & meta */}
-            <Card
-              renderHeader={<h6 className="text-md fw-semibold mb-0">Keamanan</h6>}
-            >
-              <div className="d-flex flex-column gap-2">
-                <Form.Input
-                  name="twofa"
-                  label="2FA (Nomor Authenticator)"
-                  placeholder="Opsional"
-                  icon="mdi:shield-key-outline"
-                />
-                <div className="form-check">
-                  <input className="form-check-input" type="checkbox" id="forceReset" />
-                  <label className="form-check-label" htmlFor="forceReset">
-                    Wajib ganti password saat login berikutnya
-                  </label>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
 
-        {/* Right column */}
         <div className="col-xxl-5 col-xl-5 col-lg-4">
-          {/* Role & Access */}
           <Card
             renderHeader={<h6 className="text-md fw-semibold mb-0">Akses & RBAC</h6>}
           >
@@ -324,7 +323,6 @@ export default function UserForm() {
                 </div>
               </div>
 
-              {/* Permission table */}
               <div className="table-responsive border rounded">
                 <table className="table align-middle mb-0">
                   <thead className="table-light">
@@ -381,13 +379,14 @@ export default function UserForm() {
         </div>
       </div>
 
-      {/* Bottom sticky actions (mobile friendly) */}
       <div className="bg-white position-sticky bottom-0 py-3 mt-3" style={{ zIndex: 2 }}>
         <div className="d-flex justify-content-end gap-2">
           <Button variant="light" type="button">
             <Icon icon="mdi:arrow-left" className="me-1" />Batal
           </Button>
-          <Form.ButtonSubmit>
+          <Form.ButtonSubmit
+            loading={loadingSubmit}
+          >
             <Icon icon="mdi:content-save" className="me-1" /> Simpan
           </Form.ButtonSubmit>
         </div>

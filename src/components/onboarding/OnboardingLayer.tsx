@@ -1,5 +1,5 @@
 'use client'
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import OnboardingPackage from "./OnboardingPackage";
 import Card from "../primitive/card/Card";
 import OnboardingCompany from "./OnboardingCompany";
@@ -14,9 +14,17 @@ import { Modal } from "react-bootstrap";
 import Button from "../primitive/button/Button";
 import api from "@/api/api";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { setVendor } from "@/redux/slice/auth/vendorSlice";
+import { useSelector } from "react-redux";
 
 export default function OnboardingLayer() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+
+  const vendorId = useSelector((state: RootState) => state.vendor);
+  const [dataOnBoarding, setDataOnBoarding] = useState({});
   const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false);
   const [isOpenModalSubmit, setIsOpenModalSubmit] = useState<boolean>(false)
 
@@ -56,6 +64,8 @@ export default function OnboardingLayer() {
 
         })
         if (response.status === 201) {
+          console.log(response.data.data.vendor.ID)
+          dispatch(setVendor({vendor_id:response.data.data.vendor.ID}))
           setLoadingSubmit(false)
           return true
         } else {
@@ -78,7 +88,8 @@ export default function OnboardingLayer() {
       const response = await api.post('onboarding/tax',{
         npwp:inputTaxNpwpRef?.current?.getValue(),
         amount: Number(inputTaxPpnRef?.current?.getValue()),
-        remark_tax:inputTaxRemarkRef?.current?.getValue(),
+        remark:inputTaxRemarkRef?.current?.getValue(),
+        vendor_id:vendorId.vendor
       })
       if(response.status === 201){
         setLoadingSubmit(false)
@@ -101,11 +112,12 @@ export default function OnboardingLayer() {
     setLoadingSubmit(true)
     try {
       const response = await api.post("onboarding/plan",{
-        plan_id: inputCompanyPackage
+        plan_id: inputCompanyPackage,
+        vendor_id:vendorId.vendor
       })
-      console.log("Res", response)
+
       if(response.status === 201){
-        setLoadingSubmit(false)
+        router.push("/")
         return true;
       }
     } catch (error) {
@@ -118,8 +130,6 @@ export default function OnboardingLayer() {
   }
 
   const handleNextStepBilling = async () => {
-    console.log("daksdas")
-    setLoadingSubmit(true)
     const isValidBillingName = inputBillingNameRef.current.validate()
     const isValidBillingPhone = inputBillingPhoneRef.current.validate()
     const isValidBillingAddress = inputBillingAddressRef.current.validate()
@@ -129,18 +139,23 @@ export default function OnboardingLayer() {
       return false
     }
 
+    setLoadingSubmit(true)
     try {
       const response = await api.post("onboarding/billing-address",{
         email : inputBillingEmailRef.current.getValue(),
         name : inputBillingNameRef.current.getValue(),
         phone_number : inputBillingPhoneRef.current.getValue(),
         address : inputBillingAddressRef.current.getValue(),
+        vendor_id:vendorId.vendor
       })
-
+      
       if(response.status === 201){
+
+        setLoadingSubmit(false)
         return true;
       }
     } catch (error) {
+      setLoadingSubmit(false)
       toast.error("Terjadi kesalahan, silahkan coba lagi");
     }
     setLoadingSubmit(false)
@@ -152,6 +167,10 @@ export default function OnboardingLayer() {
     setInputCompanyPackage(plan)
   }
   const handleOnSubmitForm = (e) => {
+     if(!inputCompanyPackage){
+      toast.warning("harap pilih paket yang tersedia terlebih dahulu")
+      return false
+    }
     if(e.hasError) {
       toast.error("Terjadi kesalahan, harap periksa kembali")
       return false
@@ -161,35 +180,23 @@ export default function OnboardingLayer() {
   }
 
   const handleOnClickSubmitButton = async (e) => { 
-    setLoadingSubmit(true)
-    const isValidBillingName = inputBillingNameRef.current.validate()
-    const isValidBillingPhone = inputBillingPhoneRef.current.validate()
-    const isValidBillingAddress = inputBillingAddressRef.current.validate()
-    const isValidBillingEmail = inputBillingEmailRef.current.validate()
-    if(!isValidBillingAddress || !isValidBillingEmail || !isValidBillingName || !isValidBillingPhone){
-      toast.error("Terjadi kesalahan harap periksa kembal idata")
-      return false
-    }
-
-    try {
-      const response = await api.post("onboarding/billing-address",{
-        email : inputBillingEmailRef.current.getValue(),
-        name : inputBillingNameRef.current.getValue(),
-        phone_number : inputBillingPhoneRef.current.getValue(),
-        address : inputBillingAddressRef.current.getValue(),
-      })
-
-      if(response.status === 201){
-        router.replace("/")
-        return true;
-      }
-    } catch (error) {
-      setLoadingSubmit(false)
-      toast.error("Terjadi kesalahan, silahkan coba lagi");
-    }
-    setLoadingSubmit(false)
-    return false
+    handleOnNextStepPackage()
   }
+
+  useEffect(() => {
+    const fetchOnboarding = async () => {
+      try {
+        const response = await api.get("/onboarding?vendor_id="+vendorId.vendor);
+        setDataOnBoarding(response.data.data)
+      } catch (error) {
+        console.error("Failed to fetch onboarding", error);
+      }
+    };
+    if(vendorId){
+      fetchOnboarding();
+    }
+  }, [vendorId]);
+
   return (
     <div className="container">
       <Card>
@@ -206,6 +213,7 @@ export default function OnboardingLayer() {
             onNext={handleOnNextStepCompany}
           >
             <OnboardingCompany
+              data={dataOnBoarding}
               inputCompanyLegalNameRef={inputCompanyLegalNameRef}
               inputCompanyBrandNameRef={inputCompanyBrandNameRef}
               inputCompanyPhoneRef={inputCompanyPhoneRef}
@@ -217,28 +225,30 @@ export default function OnboardingLayer() {
             onNext={hanldeOnNextStepTax}
           >
             <OnboardingTax
+              data={dataOnBoarding}
               inputTaxPpnRef={inputTaxPpnRef}
               inputTaxNpwpRef={inputTaxNpwpRef}
               inputTaxRemarkRef={inputTaxRemarkRef}
             />
             <WizardNavigation />
           </Wizard.Item>
-          <Wizard.Item header="Pilih Paket" 
-            onNext={handleOnNextStepPackage}
-          >
-            <OnboardingPackage
-              onChange={handleOnChangePackage}
-            />
-          </Wizard.Item>
           <Wizard.Item
             header="Informasi Penagihan"
             onNext={handleNextStepBilling}
           >
             <OnboardingBilling
+              data={dataOnBoarding}
               inputBillingNameRef={inputBillingNameRef}
               inputBillingPhoneRef={inputBillingPhoneRef}
               inputBillingEmailRef={inputBillingEmailRef}
               inputBillingAddressRef={inputBillingAddressRef}
+            />
+          </Wizard.Item>
+          <Wizard.Item header="Pilih Paket" 
+            onNext={handleOnNextStepPackage}
+          >
+            <OnboardingPackage
+              onChange={handleOnChangePackage}
             />
           </Wizard.Item>
         </Wizard>
