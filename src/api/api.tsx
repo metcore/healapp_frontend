@@ -23,7 +23,6 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const state = store.getState(); // ambil global redux state
   const vendor_id = state.vendor.vendor; // ambil vendor dari redux
-  console.log("adasda", vendor_id)
   config.headers["X-app-token"] = "staging";
   config.headers["X-Vendor-Id"] = vendor_id; // fallback kosong kalau belum ada
 

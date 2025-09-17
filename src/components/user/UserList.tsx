@@ -17,6 +17,7 @@ import { AppDispatch, RootState } from "@/redux/store";
 import { fetchUsers } from "@/redux/slice/user/userSlice";
 import { useSelector } from "react-redux";
 import { useRouter, useSearchParams } from 'next/navigation'
+import ButtonCreateUser from "./ButtonCreateUser";
 
 const DEFAULT_PER_PAGE = 1;
 const UserList = () => {
@@ -157,8 +158,8 @@ const UserList = () => {
               </Button>
                 </div> 
             </DropdownButton>
+            <ButtonCreateUser />
             <Link href='user/create' className='btn btn-sm btn-primary-600 gap-2 d-flex'>
-              <i className='ri-add-line' /> Buat Pengguna
             </Link>
           </div>
         </div>

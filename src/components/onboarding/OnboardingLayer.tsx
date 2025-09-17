@@ -56,6 +56,7 @@ export default function OnboardingLayer() {
       console.log(inputCompanyAddressRef.current.getValue())
       try {
         const response = await api.post('onboarding/company',{
+          vendor_id:vendorId.vendor,
           company_brand_name:inputCompanyBrandNameRef?.current?.getValue(),
           company_legal_name:inputCompanyLegalNameRef?.current?.getValue(),
           company_email:inputCompanyEmailRef?.current?.getValue(),

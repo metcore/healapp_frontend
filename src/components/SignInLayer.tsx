@@ -47,14 +47,16 @@ export default function SignInLayer() {
       const response = await api.post('/auth/login', e?.values);
       if (response.status === 200) {
         dispatch(login({ user: response?.data?.user}));
-        if(!response?.data?.user?.IsFinishOnboarding){
-          router.replace("/onboarding");
-        }else{
-          console.log("vendor", response?.data?.user?.UserVendors?.[0]?.VendorId)
-          if(response?.data?.user?.UserVendors.length === 1){
-           dispatch(setVendor({vendor_id:response?.data?.user?.UserVendors?.[0]?.VendorId}))
-          }
+        if(response?.data?.user?.UserVendors.length > 1){
           router.push("/");
+        }else{
+          dispatch(setVendor({vendor_id : response?.data?.user?.UserVendors?.[0]?.VendorId}))
+          if(response?.data?.user?.UserVendors[0].Vendor.IsFinishOnboarding == false){
+            router.push("/onboarding");
+          }
+          else{
+            router.push("/");
+          }
         }
       } else {
         setLoadingSubmit(false)

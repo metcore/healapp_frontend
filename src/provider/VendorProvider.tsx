@@ -12,12 +12,13 @@ export default function VendorProvider({ children }: { children: React.ReactNode
   const vendor = useSelector((state: RootState) => state.vendor);
   const [showModal, setShowModal] = useState<boolean>(false);
   useEffect(() => {
-    if(!vendor?.vendor & user.UserVendors.length > 1 && user?.IsFinishOnboarding){
+    if(!vendor?.vendor && user?.UserVendors?.length > 1 ){
       setShowModal(true)
     }else{
       setShowModal(false)
     }
-  }, [vendor]);
+    
+  }, [vendor,user]);
 
   return (
     <>

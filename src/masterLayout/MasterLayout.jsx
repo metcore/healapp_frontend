@@ -23,7 +23,6 @@ const MasterLayout = ({ children }) => {
   const handleLogout = async () => {
     try {
       const response = await api.post('/logout');
-      console.log(response)
       if (response.status === 200) {
         dispatch(logout())
         dispatch(setVendor(null))
